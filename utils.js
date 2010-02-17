@@ -340,7 +340,7 @@ function js_calendar_date_chosen (day, month, year) {
   if(window.js_nav) {
     if (document.current_picker == 'start_date')
       js_nav(null,month, year);
-    else if (document.current_picker == 'date')
+    else if (document.current_picker == 'one_date')
       js_nav(day, month, year);
   }
 }
@@ -354,8 +354,8 @@ function js_show_calendar (cal,onchange) {
     if (!document.current_picker) {
       if (document.getElementById ('start_date'))
 	document.current_picker = 'start_date';
-      else if (document.getElementById ('date'))
-	document.current_picker = 'date';
+      else if (document.getElementById ('one_date'))
+	document.current_picker = 'one_date';
     }
     var picker = document.getElementById(document.current_picker);
     if (picker)

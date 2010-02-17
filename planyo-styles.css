@@ -1,141 +1,130 @@
-﻿
-#reserve_form, #search_form, #presentation_code, #resources
-{
-	margin: 0;
-	padding: 0;	
-	font: normal 12px Tahoma, Verdana, Arial, sans-serif;
+#reserve_form, #search_form, #box_search_form, #product_form, #presentation_code, #resources {
+    margin: 0;
+    padding: 0;	
+    font: normal 12px Tahoma, Verdana, Arial, sans-serif;
     display: block;
 }
 
-
-#reserve_form a, #search_form a
-{
-	color: #e05817;
-	text-decoration: none;
+#reserve_form a, #search_form a, #product_form a {
+    color: #e05817;
+    text-decoration: none;
 }
 
-#reserve_form a:hover, #search_form a:hover
-{
-	text-decoration: underline;
+#reserve_form a:hover, #search_form a:hover, #product_form a:hover {
+    text-decoration: underline;
 }
 
-#reserve_form, #resources, #presentation_code
-{
+#reserve_form, #resources, #presentation_code {
     width:480px;
 }
 
-#reserve_form fieldset, #search_form fieldset
-{
-	padding: 1em 0;
-	border: none;
-	padding-top: 0;
+#reserve_form fieldset, #search_form fieldset, #box_search_form fieldset, #product_form fieldset {
+    padding: 1em 0;
+    border: none;
+    padding-top: 0;
 }
 
-#reserve_form fieldset legend, #search_form fieldset legend
-{
+#reserve_form fieldset legend, #search_form fieldset legend, #box_search_form fieldset legend, #product_form fieldset legend {
     margin: 0;
     margin-bottom:3px;
     padding:0;
-	padding-right: 1em;
-	border-bottom: 2px solid #e0e0e0;
-	
-	font-weight: bold;
-	font-size: 16px;
-	color: black;
+    padding-right: 1em;
+    border-bottom: 2px solid #e0e0e0;
+    font-weight: bold;
+    font-size: 16px;
+    color: black;
 }
 
 *:first-child+html #reserve_form fieldset legend /* IE7 */,
+*:first-child+html #product_form fieldset legend /* IE7 */,
 *:first-child+html #search_form fieldset legend /* IE7 */
-{
-	position: relative;
-	left: 0;
-
-	margin-bottom: .8em;
+*:first-child+html #box_search_form fieldset legend /* IE7 */ {
+    position: relative;
+    left: 0;
+    margin-bottom: .8em;
 }
 
 * html #reserve_form fieldset legend /* IE6 and below */,
+* html #product_form fieldset legend /* IE6 and below */,
 * html #search_form fieldset legend /* IE6 and below */
-{
-	position: relative;
-	left: -.5em;
-
-	margin-bottom: .8em;
+* html #box_search_form fieldset legend /* IE6 and below */ {
+    position: relative;
+    left: -.5em;
+    margin-bottom: .8em;
 }
 
 #reserve_form label,
-#search_form label
-{
-	display: inline;
-	float: left;
-	clear: left;
-
-	width: 12em;
-	font-weight: bold;
-	line-height: 1.1;
+#search_form label,
+#product_form label,
+#box_search_form label {
+    display: inline;
+    float: left;
+    clear: left;
+    width: 12em;
+    font-weight: bold;
+    line-height: 1.1;
     margin-top:2px;
 }
 
 #reserve_form label em,
-#search_form label em
-{
-	font-weight: bold;
-	font-style: normal;
-	color: red;
+#search_form label em,
+#product_form label em,
+#box_search_form label em {
+    font-weight: bold;
+    font-style: normal;
+    color: red;
 }
 
 #reserve_form select,
-#search_form select
-{
+#search_form select,
+#product_form select,
+#box_search_form select {
     margin-bottom:3px;
 }
 
 #reserve_form input,
-#search_form input
-{
-	padding-top: 2px;
+#search_form input,
+#product_form input,
+#box_search_form input {
+    padding-top: 2px;
     margin-bottom:3px;
-
-	line-height: 18px;
-	vertical-align: middle;
+    line-height: 18px;
+    vertical-align: middle;
 }
 
 #reserve_form input[type="text"],
-#search_form input[type="text"]
-{
-	vertical-align: bottom;
+#search_form input[type="text"],
+#product_form input[type="text"],
+#box_search_form input[type="text"] {
+    vertical-align: bottom;
     width:15em;
 }
 
-#reserve_form #date, #reserve_form #start_date, #reserve_form #end_date,
-#search_form #date, #search_form #start_date, #search_form #end_date
-{
+#reserve_form #one_date, #reserve_form #start_date, #reserve_form #end_date,
+#search_form #one_date, #search_form #start_date, #search_form #end_date,
+#box_search_form #box_one_date, #box_search_form #box_start_date, #box_search_form #box_end_date {
     width:8em;
 }
 
-#reserve_form #phone, #reserve_form #mobile_number_param
-{
+#reserve_form #phone, #reserve_form #mobile_number_param {
     width:8em;
 }
 
-#reserve_form ul, #search_form ul, #resources ul
-{
+#reserve_form ul, #product_form ul, #search_form ul, #resources ul, #box_search_form ul {
     list-style: none;
     margin: 0;
     padding:0;
 }
 
-#reserve_form li, #search_form li, #resources li
-{
-	margin-bottom: .5em;
+#reserve_form li, #product_form li, #search_form li, #resources li, #box_search_form ul {
+    margin-bottom: .5em;
     clear:both;
 }
 
-#reserve_form .button, #search_form .button
-{
+#reserve_form .button, #product_form .button, #search_form .button, #box_search_form .button {
     display:block;
     margin: 0 0 1em;
     padding: 0 .5em;
-    
     height: 24px;
     line-height:24px;    
     background: url(button-bg.png);
@@ -145,30 +134,23 @@
     cursor: pointer;
 }
 
-#reserve_form li img, #search_form li img
-{
-	border: none;
-	
-	vertical-align: middle;	
+#reserve_form li img, #product_form li img, #search_form li img, #box_search_form li img {
+    border: none;
+    vertical-align: middle;	
 }
 
-/******************************************************************************/
-
-#reserve_form .left, #search_form .left
-{
-	display: block;
-	clear: left;
+#reserve_form .left, #search_form .left, #product_form .left, #box_search_form .left {
+    display: block;
+    clear: left;
 }
 
-#reserve_form .right, #search_form .right
-{
-	display: inline;
-	float: right;
-	clear: right;
+#reserve_form .right, #search_form .right, #product_form .right, #box_search_form .right {
+    display: inline;
+    float: right;
+    clear: right;
 }
 
-#reserve_form img, #search_form img
-{
+#reserve_form img, #product_form img, #search_form img, #box_search_form img {
     border:0;
 }
 
@@ -183,28 +165,24 @@
     width:316px;
 }
 
-.related_help .begin
-{
-	height: 15px;
-	background: url(rounded-top-big.png) no-repeat;	
+.related_help .begin {
+    height: 15px;
+    background: url(rounded-top-big.png) no-repeat;	
 }
 
-.related_help .content
-{
+.related_help .content {
     padding:0px 16px 0px 16px;
     background: url(rounded-mid-big.png) repeat-y;
 }
 
-.related_help .content .title,.related_help_small .content .title
-{
+.related_help .content .title,.related_help_small .content .title {
     font: bold 14px Tahoma, Verdana, Arial, sans-serif;
     color:#062245;
 }
 
-.related_help .end
-{
-	height: 15px;
-	background: url(rounded-bottom-big.png) no-repeat;	
+.related_help .end {
+    height: 15px;
+    background: url(rounded-bottom-big.png) no-repeat;	
 }
 
 .related_help_small {
@@ -214,82 +192,71 @@
     width:166px;
 }
 
-.related_help_small .begin
-{
-	height: 15px;
-	background: url(rounded-top.png) no-repeat;	
+.related_help_small .begin {
+    height: 15px;
+    background: url(rounded-top.png) no-repeat;	
 }
 
-.related_help_small .content
-{
+.related_help_small .content {
     padding:0px 16px 0px 16px;
     background: url(rounded-mid.png) repeat-y;
 }
 
-.related_help_small .end
-{
-	height: 15px;
-	background: url(rounded-bottom.png) no-repeat;	
+.related_help_small .end {
+    height: 15px;
+    background: url(rounded-bottom.png) no-repeat;	
 }
 
-.calpicker
-{
+.calpicker {
     margin: 0;
     line-height:100%;
     clear:both;
     border: 1px solid #c0c0c0;
     border-collapse: collapse;
     background-color:white;
+    width: 140px;
 }
 
-.calpicker th
-{
+.calpicker th {
     background: #d0d0d0;
     font: normal 11px Tahoma, Verdana, Arial, sans-serif;
     padding: 2px 3px 2px 3px;
     border-bottom: 0px;
 }
 
-.calpicker .active_day
-{
+.calpicker .active_day {
     background: #bbbbbb;
     color:white;
 }
 
-.calpicker .reserved
-{
-	color: red;
-	font-weight: bold;
+.calpicker .reserved {
+    color: red;
+    font-weight: bold;
 }
 
-.calpicker .reserved:hover
-{
+.calpicker .reserved:hover {
     cursor:auto;
     background:white;
     color:red;
 }
 
-.calpicker .cur_month_day
-{
+.calpicker .cur_month_day {
     background: #f0f0f0;
     color:black;
 }
 
-.calpicker .ext_month_day
-{
+.calpicker .ext_month_day {
     background: #ffffff;
     color: #c5c5c5;
 }
 
-.calpicker td:hover
-{
-	background: #e77817;
-	color: white;
-	cursor: pointer;
+.calpicker td:hover {
+    background: #e77817;
+    color: white;
+    cursor: pointer;
 }
 
-.calpicker td
-{
+.calpicker td {
     border: 1px solid #c0c0c0;
     vertical-align: top;
     font: normal 10px Tahoma, Verdana, Arial, sans-serif;
@@ -297,8 +264,7 @@
     padding: 2px 3px 2px 3px;
 }
 
-.calpicker caption
-{
+.calpicker caption {
     padding:2px;
     background-color:white;
     border-top:4px solid #c0c0c0;
@@ -307,60 +273,43 @@
     color:black;
 }
 
-.calpicker caption .nav
-{
+.calpicker caption .nav {
     float:left;
     padding-right:3px;
     color: #e05817;
     text-decoration: none;
 }
 
-#res_error_msg
-{
+#res_error_msg {
     display:none;
     color:red;
     font: bold 12px Tahoma, Verdana, Arial, sans-serif;
     margin-bottom:15px;
 }
 
-#res_ok_msg
-{
+#res_ok_msg {
     display:none;
     font: normal 12px Tahoma, Verdana, Arial, sans-serif;
 }
 
-.stdtable
-{
+.stdtable {
     clear:both;
     border-collapse:collapse;
     border: 1px solid #c0c0c0;
 }
 
-.stdtable td
-{
+.stdtable td {
     border: 1px solid #c0c0c0;
     font-size: 10px;
     text-align: left;
     padding:2px 5px 2px 5px;
 }
 
-.stdtable th
-{
+.stdtable th {
     background: #f0f0f0;
     padding: 2px 5px 2px 5px;
     font-size: 11px;
     text-align: left;
-}
-
-.images_simple {
-    float:right;
-}
-
-.image_simple {
-float:left;
-padding:3px;
-background-color:black;
-margin:2px;
 }
 
 .error {
@@ -376,30 +325,116 @@ margin:2px;
 }
 
 #search_results {
-	margin-top:20px;
+    margin-top:20px;
 }
 
-#resources .resource_preview
-{
+#resources .resource_preview {
     display: block;
 }
 
-#presentation_code .button
-{
+#presentation_code .button {
     clear:left;
     float:left;
     margin-top:10px;
 }
 
-#presentation_code .resource_name
-{
+#presentation_code .resource_name {
     font-weight: bold;
     font-size: 24px;
 }
 
-#presentation_code .calendar_prev
-{
+#presentation_code .calendar_prev {
     float:left;
     clear:left;
     margin-top:20px;
 }
+
+.img_thumb {
+    float:left;
+    width:90px;
+}
+
+.img_thumb_desc {
+    clear:left;
+    float:left;
+    margin-left:5px;
+}
+
+#bg_hider .buttons {
+    padding: 8px;
+}
+
+#bg_hider .buttons .leftbtn {
+    float: left;
+}
+
+#bg_hider .buttons .rightbtn {
+    float: right;
+    margin-right:25px;
+}
+
+#bg_hider .buttons .prev,
+#bg_hider .buttons .next,
+#bg_hider .buttons .play,
+#bg_hider .buttons .pause,
+#bg_hider .buttons .close {
+    display: block;
+    width: 28px;
+    height: 28px;
+}
+
+#bg_hider .buttons .prev {
+    background: url(http://www.planyo.com/slideshow/btn-prev.png);
+}
+#bg_hider .buttons .prev:hover {
+    background: url(http://www.planyo.com/slideshow/btn-prev-hvr.png);
+}
+#bg_hider .buttons .next {
+    background: url(http://www.planyo.com/slideshow/btn-next.png); 
+}
+#bg_hider .buttons .next:hover {
+    background: url(http://www.planyo.com/slideshow/btn-next-hvr.png);
+}
+#bg_hider .buttons .play {
+    margin-left: 4px; background: url(http://www.planyo.com/slideshow/btn-play.png);
+}
+#bg_hider .buttons .play:hover {
+    background: url(http://www.planyo.com/slideshow/btn-play-hvr.png);
+}
+#bg_hider .buttons .pause {
+    margin-left: 4px; background: url(http://www.planyo.com/slideshow/btn-pause.png); 
+}
+#bg_hider .buttons .pause:hover {
+    background: url(http://www.planyo.com/slideshow/btn-pause-hvr.png);
+}
+#bg_hider .buttons .close {
+    background: url(http://www.planyo.com/slideshow/btn-close.png);
+}
+#bg_hider .buttons .close:hover {
+    background: url(http://www.planyo.com/slideshow/btn-close-hvr.png);
+}
+
+.images {
+    float:right;
+    clear:right;
+    display: inline;
+}
+
+.images img {
+    float: right;
+    padding:3px;
+    background-color:black;
+    margin:2px;
+}
+
+.images_simple {
+    float:right;
+}
+
+.image_simple {
+    float:left;
+    padding:3px;
+    background-color:black;
+    margin:2px;
+}
+

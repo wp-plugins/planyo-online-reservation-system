@@ -3,7 +3,7 @@
 Plugin Name: Planyo online reservation system
 Plugin URI: http://www.planyo.com/wordpress-reservation-system
 Description: This plugin embeds the Planyo.com online reservation system. Before using it, you'll need to create an account at planyo.com. Please see <a href='http://www.planyo.com/wordpress-reservation-system'>http://www.planyo.com/wordpress-reservation-system</a> for more info.
-Version: 1.0
+Version: 1.1.1
 Author: Xtreeme GmbH
 Author URI: http://www.planyo.com/
 */
@@ -96,8 +96,9 @@ function planyo_options() {
         <td><select name='default_mode'>
 		    <?php planyo_output_select_option('search', 'Search box', 'default_mode', true);?>
 		    <?php planyo_output_select_option('resources', 'Resource list', 'default_mode');?>
+		    <?php planyo_output_select_option('empty', 'Do nothing', 'default_mode');?>
         </select><br/>
-        <span class='description'>Choose the initial (default) mode: 'Search box' to allow clients to search for available dates or 'Resource list' to display a list of all resources (in such case search must be initiated by embedding an extra search box -- see last step of integration in Planyo's admin panel).</span>
+        <span class='description'>Choose the initial (default) mode: 'Search box' to allow clients to search for available dates or 'Resource list' to display a list of all resources (in such case search must be initiated by embedding an extra search box -- see last step of integration in Planyo's admin panel). Choosing 'Do nothing' will not display anything by default but will require you to either pass the resource ID to the module as URL parameter or add an external search box or calendar preview.</span>
         </td>
         </tr>
 

@@ -47,3 +47,12 @@ In short: use the following tag wherever you want the planyo form to appear:
 
 = 1.0 =
 * Original release
+
+= 1.1 =
+* Resource detail page can display images in full size
+
+= 1.1.1 =
+* Added a 'do nothing' mode that by default doesn't display any content
+
+= 1.2 =
+* Additional products can now be reserved through the plugin

@@ -11,6 +11,7 @@ function planyo_code() {
 		var planyo_language='<?php echo get_option('planyo_language');?>'; // you can optionally change the language here, e.g. 'FR' or 'ES'
 		var sort_fields='<?php echo get_option('sort_fields');?>'; // comma-separated sort fields -- a single field will hide the sort dropdown box
 		var presentation_mode=<?php echo get_option('default_mode') == 'resources' ? "true" : "false";?>; // false: show the search box by default, true: show resource list by default
+		var empty_mode=<?php echo get_option('default_mode') == 'empty' ? "true" : "false";?>; // if true, show nothing by default
 </script>
 
 <script type="text/javascript">
