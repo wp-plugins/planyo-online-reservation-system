@@ -38,6 +38,7 @@ href='http://www.planyo.com/wordpress-reservation-system/'>http://www.planyo.com
 
 In short: use the following tag wherever you want the planyo form to appear:
 &lt;?php include ABSPATH . 'wp-content/plugins/planyo/embed.php'; ?&gt;
+Make sure this directory exists -- if the planyo plugin is installed in a different location, you'll need to modify the path accordingly!
 
 == Screenshots ==
 
