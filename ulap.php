@@ -22,6 +22,8 @@ function send_http_post($url, &$fields) {
       $urlencoded .= '&';
     }
   }
+  $urlencoded .= 'modver=1.3';
+
   $context_options = array(
 			   'http'=>array(
 					 'method'=>"POST",
@@ -30,21 +32,21 @@ function send_http_post($url, &$fields) {
 					 'content'=> $urlencoded)
 			   );
   $context_options['https'] = $context_options['http'];
-  $context = stream_context_create($context_options);
-  $fp = @fopen($url, 'r', false, $context);
-  if (!$fp) {
+  $context = @stream_context_create($context_options);
+  if (function_exists('curl_init')) {
     $cs = @curl_init($url);
     if ($cs) {
-      curl_setopt ($cs, CURLOPT_POST, 1);
-      curl_setopt ($cs, CURLOPT_POSTFIELDS, $urlencoded);
-      curl_setopt ($cs, CURLOPT_FOLLOWLOCATION, 1);
-      curl_setopt ($cs, CURLOPT_RETURNTRANSFER, 1); 
-      $response = curl_exec ($cs);
-      curl_close ($cs);
-      return $response;
+      @curl_setopt ($cs, CURLOPT_POST, 1);
+      @curl_setopt ($cs, CURLOPT_POSTFIELDS, $urlencoded);
+      @curl_setopt ($cs, CURLOPT_FOLLOWLOCATION, 1);
+      @curl_setopt ($cs, CURLOPT_RETURNTRANSFER, 1); 
+      $response = @curl_exec ($cs);
+      @curl_close ($cs);
+      if ($response && strlen($response) > 0)
+        return $response;
     }
-    return null;
   }
+  $fp = @fopen($url, 'r', false, $context);
   $response = '';
   $old_error_reporting = error_reporting();
   error_reporting($old_error_reporting & ~E_WARNING);
@@ -66,7 +68,7 @@ function send_http_post($url, &$fields) {
 
 if (isset ($_POST ['ulap_url']))
   echo send_http_post ($_POST ['ulap_url'], $_POST);
-else
+else if (isset ($_GET ['ulap_url']))
   echo send_http_post ($_GET ['ulap_url'], $_GET);
 
 ?>

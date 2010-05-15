@@ -90,6 +90,7 @@
     margin-bottom:3px;
     line-height: 18px;
     vertical-align: middle;
+    display:inline;
 }
 
 #reserve_form input[type="text"],
@@ -330,6 +331,7 @@
 
 #resources .resource_preview {
     display: block;
+    float:left;
 }
 
 #presentation_code .button {
@@ -428,7 +430,7 @@
 }
 
 .images_simple {
-    float:right;
+    float:left;
 }
 
 .image_simple {

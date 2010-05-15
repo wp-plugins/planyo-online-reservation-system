@@ -111,12 +111,27 @@ function js_output_time(hour, minute) {
 
 function js_output_date(year, month, day) {
   var date = document.date_format;
-  if (!date) date = "Y/m/d";
+  if (!date) date = "Y-m-d";
   date = date.replace("Y", year);
   date = date.replace("m", month < 10 ? '0'+month : month);
   date = date.replace("M", js_get_month_name(month, true));
   date = date.replace("d", day < 10 ? '0'+day : day);
   return date;
+}
+
+function js_parse_date (date_str, format) {
+  //works with the following formats: Y/m/d, Y-m-d, d.m.Y, d M Y(EN), M d, Y(EN), m/d/Y
+  var parsed = Date.parse(date_str);
+  if ((!parsed || parsed == 'undefined') && format) {
+    switch (format) {
+      case "d.m.Y":
+        var parts = date_str.split('.');
+        if (parts.length >= 2)
+          parsed = Date.parse(parts[2]+'-'+parts[1]+'-'+parts[0]);
+        break;
+    }
+  }
+  return parsed;
 }
 
 function js_get_day_info_for_month (month, year) {
@@ -349,7 +364,7 @@ function js_show_calendar (cal,onchange) {
   var cal_el = document.getElementById(cal);
   var cal_ref_el = document.getElementById(cal+'calref');
   var coords = cal_ref_el.getCoordinates ? cal_ref_el.getCoordinates() : get_item_coordinates(cal_ref_el);
-  var old_date = Date.parse(cal_el.value);
+  var old_date = js_parse_date(cal_el.value, document.date_format);
   if (!cal_el.value) {
     if (!document.current_picker) {
       if (document.getElementById ('start_date'))
@@ -359,7 +374,7 @@ function js_show_calendar (cal,onchange) {
     }
     var picker = document.getElementById(document.current_picker);
     if (picker)
-      old_date = Date.parse(picker.value);
+      old_date = js_parse_date(picker.value, document.date_format);
   }
   document.current_picker = cal;
   document.current_picker_onchange = onchange;

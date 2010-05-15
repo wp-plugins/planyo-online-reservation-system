@@ -56,3 +56,8 @@ In short: use the following tag wherever you want the planyo form to appear:
 
 = 1.2 =
 * Additional products can now be reserved through the plugin
+
+= 1.3 =
+* You can add language choice and availability preview to the reservation form
+* You can now define your own templates for the resource list, resource details and reservation form pages. Now Planyo can present your resources in ANY imaginable way
+* The module is now SEO-friendly. The resource list and resource details pages will be indexed by Google and other search engines.

@@ -3,7 +3,7 @@
 Plugin Name: Planyo online reservation system
 Plugin URI: http://www.planyo.com/wordpress-reservation-system
 Description: This plugin embeds the Planyo.com online reservation system. Before using it, you'll need to create an account at planyo.com. Please see <a href='http://www.planyo.com/wordpress-reservation-system'>http://www.planyo.com/wordpress-reservation-system</a> for more info.
-Version: 1.1.1
+Version: 1.3
 Author: Xtreeme GmbH
 Author URI: http://www.planyo.com/
 */
@@ -36,6 +36,7 @@ function register_planyo_settings() {
   register_setting('planyo-settings-group', 'sort_fields');
   register_setting('planyo-settings-group', 'planyo_language');
   register_setting('planyo-settings-group', 'default_mode');
+  register_setting('planyo-settings-group', 'seo_friendly');
 }
 
 function planyo_output_select_option ($value, $text, $option, $selected = false) {
@@ -74,7 +75,7 @@ function planyo_options() {
         </tr>
          
         <tr valign="top">
-        <th scope="row">Language of Planyo interface</th>
+        <th scope="row">Default language of Planyo interface</th>
         <td><select name='planyo_language'>
 		    <?php planyo_output_select_option('EN', 'English', 'planyo_language', true);?>
 		    <?php planyo_output_select_option('FR', 'French', 'planyo_language');?>
@@ -87,21 +88,30 @@ function planyo_options() {
 		    <?php planyo_output_select_option('IS', 'Icelandic', 'planyo_language');?>
 		    <?php planyo_output_select_option('DK', 'Danish', 'planyo_language');?>
         </select><br/>
-        <span class='description'>Choose of the supported languages.</span>
+        <span class='description'>Choose one of the supported languages. You can also modify the templates (in your planyo administration panel) to display the language choice to the user or pass the language as a parameter in the URL (lang).</span>
         </td>
         </tr>
 
         <tr valign="top">
         <th scope="row">Default mode</th>
         <td><select name='default_mode'>
-		    <?php planyo_output_select_option('search', 'Search box', 'default_mode', true);?>
-		    <?php planyo_output_select_option('resources', 'Resource list', 'default_mode');?>
+		    <?php planyo_output_select_option('search', 'Search box', 'default_mode');?>
+		    <?php planyo_output_select_option('resources', 'Resource list', 'default_mode', true);?>
 		    <?php planyo_output_select_option('empty', 'Do nothing', 'default_mode');?>
         </select><br/>
-        <span class='description'>Choose the initial (default) mode: 'Search box' to allow clients to search for available dates or 'Resource list' to display a list of all resources (in such case search must be initiated by embedding an extra search box -- see last step of integration in Planyo's admin panel). Choosing 'Do nothing' will not display anything by default but will require you to either pass the resource ID to the module as URL parameter or add an external search box or calendar preview.</span>
+        <span class='description'>Choose the initial (default) mode: 'Search box' to allow clients to search for available dates or 'Resource list' to display a list of all resources (in such case search must be initiated by embedding an extra search box -- see last step of integration in Planyo's admin panel). Choosing 'Do nothing' will not display anything by default but will require you to either pass the resource ID to the module as parameter in the URL (resource_id) or add an external search box or calendar preview.</span>
         </td>
         </tr>
 
+        <tr valign="top">
+        <th scope="row">SEO friendly</th>
+        <td><select name='seo_friendly'>
+		    <?php planyo_output_select_option('1', 'Yes', 'seo_friendly', true);?>
+		    <?php planyo_output_select_option('0', 'No', 'seo_friendly');?>
+        </select><br/>
+        <span class='description'>Choose whether the plugin in the resource list and resource details modes should be SEO friendly (information retrieved from the server when loading the page) or not (information retrieved using Javascript/AJAX). Choosing yes will add a slight delay to the loading time of the page but will let search engines index the resource names, descriptions and photos.</span>
+        </td>
+        </tr>
     </table>
     
     <p class="submit">
