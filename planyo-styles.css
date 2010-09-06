@@ -3,28 +3,33 @@
     padding: 0;	
     font: normal 12px Tahoma, Verdana, Arial, sans-serif;
     display: block;
+    text-align:left;
 }
 
-#reserve_form a, #search_form a, #product_form a {
+#planyo_content {
+    margin-bottom:30px;
+}
+
+#planyo_content a, #planyo_plugin_code a {
     color: #e05817;
     text-decoration: none;
 }
 
-#reserve_form a:hover, #search_form a:hover, #product_form a:hover {
+#planyo_content a:hover, #planyo_plugin_code a:hover {
     text-decoration: underline;
 }
 
 #reserve_form, #resources, #presentation_code {
-    width:480px;
+    width:100%;
 }
 
-#reserve_form fieldset, #search_form fieldset, #box_search_form fieldset, #product_form fieldset {
+#planyo_content form fieldset, #box_search_form fieldset, #planyo_plugin_code form fieldset {
     padding: 1em 0;
     border: none;
     padding-top: 0;
 }
 
-#reserve_form fieldset legend, #search_form fieldset legend, #box_search_form fieldset legend, #product_form fieldset legend {
+#planyo_content form fieldset legend, #box_search_form fieldset legend, #planyo_plugin_code form fieldset legend {
     margin: 0;
     margin-bottom:3px;
     padding:0;
@@ -35,28 +40,7 @@
     color: black;
 }
 
-*:first-child+html #reserve_form fieldset legend /* IE7 */,
-*:first-child+html #product_form fieldset legend /* IE7 */,
-*:first-child+html #search_form fieldset legend /* IE7 */
-*:first-child+html #box_search_form fieldset legend /* IE7 */ {
-    position: relative;
-    left: 0;
-    margin-bottom: .8em;
-}
-
-* html #reserve_form fieldset legend /* IE6 and below */,
-* html #product_form fieldset legend /* IE6 and below */,
-* html #search_form fieldset legend /* IE6 and below */
-* html #box_search_form fieldset legend /* IE6 and below */ {
-    position: relative;
-    left: -.5em;
-    margin-bottom: .8em;
-}
-
-#reserve_form label,
-#search_form label,
-#product_form label,
-#box_search_form label {
+#planyo_content form label, #box_search_form label, #planyo_plugin_code form label {
     display: inline;
     float: left;
     clear: left;
@@ -66,26 +50,17 @@
     margin-top:2px;
 }
 
-#reserve_form label em,
-#search_form label em,
-#product_form label em,
-#box_search_form label em {
+#planyo_content form label em, #box_search_form label em, #planyo_plugin_code form label em {
     font-weight: bold;
     font-style: normal;
     color: red;
 }
 
-#reserve_form select,
-#search_form select,
-#product_form select,
-#box_search_form select {
+#planyo_content form select, #box_search_form select, #planyo_plugin_code form select {
     margin-bottom:3px;
 }
 
-#reserve_form input,
-#search_form input,
-#product_form input,
-#box_search_form input {
+#planyo_content form input, #box_search_form input, #planyo_plugin_code form input {
     padding-top: 2px;
     margin-bottom:3px;
     line-height: 18px;
@@ -93,17 +68,14 @@
     display:inline;
 }
 
-#reserve_form input[type="text"],
-#search_form input[type="text"],
-#product_form input[type="text"],
-#box_search_form input[type="text"] {
+#planyo_content form input[type="text"], #planyo_plugin_code form input[type="text"] {
     vertical-align: bottom;
     width:15em;
 }
 
-#reserve_form #one_date, #reserve_form #start_date, #reserve_form #end_date,
-#search_form #one_date, #search_form #start_date, #search_form #end_date,
-#box_search_form #box_one_date, #box_search_form #box_start_date, #box_search_form #box_end_date {
+#planyo_content form #one_date, #planyo_content form #start_date,#planyo_content form #end_date,
+#box_one_date, #box_start_date,#box_end_date,
+#planyo_plugin_code form #one_date, #planyo_plugin_code form #start_date,#planyo_plugin_code form #end_date {
     width:8em;
 }
 
@@ -111,18 +83,23 @@
     width:8em;
 }
 
-#reserve_form ul, #product_form ul, #search_form ul, #resources ul, #box_search_form ul {
+#planyo_content ul.summary, #planyo_plugin_code ul.summary, #box_search_form ul.summary {
+    line-height:1.5;
+}
+
+#planyo_content ul, #planyo_plugin_code ul, #box_search_form ul {
     list-style: none;
     margin: 0;
     padding:0;
+    text-indent:0;
 }
 
-#reserve_form li, #product_form li, #search_form li, #resources li, #box_search_form ul {
-    margin-bottom: .5em;
+#planyo_content form li, #planyo_plugin_code form li, #resources li, #box_search_form ul {
+    margin: 0 0 .5em 0;
     clear:both;
 }
 
-#reserve_form .button, #product_form .button, #search_form .button, #box_search_form .button {
+#planyo_content .button, #planyo_plugin_code .button {
     display:block;
     margin: 0 0 1em;
     padding: 0 .5em;
@@ -135,77 +112,54 @@
     cursor: pointer;
 }
 
-#reserve_form li img, #product_form li img, #search_form li img, #box_search_form li img {
+#planyo_content li img, #planyo_plugin_code li img, #box_search_form li img {
     border: none;
     vertical-align: middle;	
 }
 
-#reserve_form .left, #search_form .left, #product_form .left, #box_search_form .left {
+#planyo_content .left, #planyo_plugin_code .left {
     display: block;
     clear: left;
 }
 
-#reserve_form .right, #search_form .right, #product_form .right, #box_search_form .right {
+#planyo_content .right, #planyo_plugin_code .right {
     display: inline;
     float: right;
     clear: right;
 }
 
-#reserve_form img, #product_form img, #search_form img, #box_search_form img {
+#planyo_content img, #planyo_plugin_code img {
     border:0;
 }
 
-#price_info {
-    font: normal 11px Tahoma, Verdana, Arial, sans-serif;
+.price_info {
+  font: normal 11px Tahoma, Verdana, Arial, sans-serif;
+  font-size:18px;
 }
 
-.related_help {
-    display:inline;
-    float:right;
-    clear:right;
-    width:316px;
+.price_info_div 
+{
+  min-height: 32px;
+  width: 100%;
+  background-color: #f0f0f0;
+  clear:both;
+  float:none;
+  margin-top:10px;
+  margin-bottom:5px;
+  border-radius:5px;
+  -moz-border-radius:5px;
+  -webkit-border-radius:5px;
 }
 
-.related_help .begin {
-    height: 15px;
-    background: url(rounded-top-big.png) no-repeat;	
+.price_info_div .price_info_div_content {
+  font-size:13px;
+  padding: 8px;
 }
 
-.related_help .content {
-    padding:0px 16px 0px 16px;
-    background: url(rounded-mid-big.png) repeat-y;
-}
-
-.related_help .content .title,.related_help_small .content .title {
-    font: bold 14px Tahoma, Verdana, Arial, sans-serif;
-    color:#062245;
-}
-
-.related_help .end {
-    height: 15px;
-    background: url(rounded-bottom-big.png) no-repeat;	
-}
-
-.related_help_small {
-    display:inline;
-    float:right;
-    clear:right;
-    width:166px;
-}
-
-.related_help_small .begin {
-    height: 15px;
-    background: url(rounded-top.png) no-repeat;	
-}
-
-.related_help_small .content {
-    padding:0px 16px 0px 16px;
-    background: url(rounded-mid.png) repeat-y;
-}
-
-.related_help_small .end {
-    height: 15px;
-    background: url(rounded-bottom.png) no-repeat;	
+.price_info_div .title
+{
+  font: bold 20px Tahoma, Verdana, Arial, sans-serif;
+  color:#062245;
 }
 
 .calpicker {
@@ -313,12 +267,12 @@
     text-align: left;
 }
 
-.error {
+#planyo_content .error, #planyo_plugin_code .error {
     font: normal 10px Tahoma, Verdana, Arial, sans-serif;
     color:#cc0000;
 }
 
-.errorbig {
+#planyo_content .errorbig, #planyo_plugin_code .errorbig {
     font: bold 12px Tahoma, Verdana, Arial, sans-serif;
     color:#cc0000;
     color: red;
@@ -416,27 +370,47 @@
     background: url(http://www.planyo.com/slideshow/btn-close-hvr.png);
 }
 
-.images {
+#planyo_content .images, #planyo_plugin_code .images {
     float:right;
     clear:right;
     display: inline;
 }
 
-.images img {
+#planyo_content .images img, #planyo_plugin_code .images img {
     float: right;
     padding:3px;
     background-color:black;
     margin:2px;
 }
 
-.images_simple {
+#planyo_content .images_simple, #planyo_plugin_code .images_simple {
     float:left;
 }
 
-.image_simple {
+#planyo_content .image_simple, #planyo_plugin_code .image_simple {
     float:left;
     padding:3px;
     background-color:black;
     margin:2px;
 }
 
+#planyo_content .section, #planyo_plugin_code .section {
+    margin:25px 0 10px 0;
+}
+
+#planyo_content .section span, #planyo_plugin_code .section span {
+    font-size: 14px;
+    color: black;
+    border-bottom: 2px solid #e0e0e0;
+    font-size: 16px; 
+    font-weight: bold;
+}
+
+#planyo_content #cancel_reason, #planyo_plugin_code #cancel_reason {
+    width:100%;
+    height:80px;
+}
+
+#planyo_mobile_switch {
+    margin-top:20px;
+}

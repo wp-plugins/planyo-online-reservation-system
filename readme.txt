@@ -3,7 +3,7 @@ Plugin Author: Xtreeme GmbH
 Contributors: xtreeme
 Donate link: No Thanks
 Tags: online, reservation, booking, system, reserve, book, software
-Requires at least: 2.3
+Requires at least: 2.5
 Tested up to: 2.9.1
 Stable tag: trunk
 
@@ -62,3 +62,8 @@ Make sure this directory exists -- if the planyo plugin is installed in a differ
 * You can add language choice and availability preview to the reservation form
 * You can now define your own templates for the resource list, resource details and reservation form pages. Now Planyo can present your resources in ANY imaginable way
 * The module is now SEO-friendly. The resource list and resource details pages will be indexed by Google and other search engines.
+
+= 1.5 =
+* No more difficult set-up. You now embed planyo by using the [planyo] shortcode in any article
+* Planyo now works with both jQuery and mootools libraries so you can choose the one that you already use on your site
+* Special mobile WebApp version for mobile devices, such as iPhone or Android

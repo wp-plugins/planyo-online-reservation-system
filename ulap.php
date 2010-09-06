@@ -1,5 +1,12 @@
 <?php
 
+if (!isset($header_written)) {
+  if (isset ($_POST ['html_content_type']) || isset ($_GET ['html_content_type']))
+    @header("Content-Type: text/html; charset=UTF-8");
+  else
+    @header("Content-Type: text/plain; charset=UTF-8");
+}
+
 // Ultra Light AJAX Proxy -- PHP implementation
 // Used by the Planyo reservation system: see more at http://www.planyo.com/
 
@@ -22,7 +29,7 @@ function send_http_post($url, &$fields) {
       $urlencoded .= '&';
     }
   }
-  $urlencoded .= 'modver=1.3';
+  $urlencoded .= 'modver=1.5';
 
   $context_options = array(
 			   'http'=>array(

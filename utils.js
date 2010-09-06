@@ -1,4 +1,4 @@
-function isset (obj, d1, d2, d3, d4, d5) {
+function planyo_isset (obj, d1, d2, d3, d4, d5) {
   try {
     if (d5 != null)
       return obj [d1][d2][d3][d4][d5] != undefined;
@@ -42,7 +42,7 @@ function dump(arr,level) {
   return dumped_text;
 }
 
-function js_get_next_month (month, year) {
+function planyo_get_next_month (month, year) {
   var next_month = month + 1;
   var next_year = year;
   if (next_month == 13) {
@@ -52,7 +52,7 @@ function js_get_next_month (month, year) {
   return new Array (next_month, next_year);
 }
 
-function js_get_prev_month (month, year) {
+function planyo_get_prev_month (month, year) {
   var prev_month = month - 1;
   var prev_year = year;
   if (prev_month == 0) {
@@ -62,7 +62,7 @@ function js_get_prev_month (month, year) {
   return new Array (prev_month, prev_year);
 }
 
-function js_get_month_specs (month, year) {
+function planyo_get_month_specs (month, year) {
   // returns an array: (offset of the first day of month, # of days in last month, # of days in current month, month, year)
       
   var d = new Date ();
@@ -81,25 +81,25 @@ function js_get_month_specs (month, year) {
   return new Array (first_offset, prev_month_count, this_month_count, month, year);
 }
 
-function js_get_day_name (n, is_short) {
-  var arr = isset (document.s_weekdays_short) ? (is_short ? document.s_weekdays_short : document.s_weekdays_med) :
+function planyo_get_day_name (n, is_short) {
+  var arr = planyo_isset (document.s_weekdays_short) ? (is_short ? document.s_weekdays_short : document.s_weekdays_med) :
     (is_short ? new Array ("M", "T", "W", "T", "F", "S", "S") : new Array ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"));
   return arr [n % 7];
 }
 
-function js_get_month_name (n, is_short) {
-  var arr = isset (document.s_months_short) ? (is_short ? document.s_months_short : document.s_months_long) :
+function planyo_get_month_name (n, is_short) {
+  var arr = planyo_isset (document.s_months_short) ? (is_short ? document.s_months_short : document.s_months_long) :
     (is_short ? new Array ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec") : new Array ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"));
   return arr [n - 1];
 }
 
-function js_output_hour_only(hour, european_style_postfix) {
+function planyo_output_hour_only(hour, european_style_postfix) {
   if (document.time_format && document.time_format.indexOf('a') != -1)
     return ((hour % 12) == 0 ? 12 : hour % 12) +' '+ (hour < 12 ? 'am' : 'pm');
   return hour+(european_style_postfix ? european_style_postfix : '');
 }
 
-function js_output_time(hour, minute) {
+function planyo_output_time(hour, minute) {
   var time_str = document.time_format;
   if (!time_str) time_str = "H:i";
   time_str = time_str.replace("H", hour);
@@ -109,17 +109,17 @@ function js_output_time(hour, minute) {
   return time_str;
 }
 
-function js_output_date(year, month, day) {
+function planyo_output_date(year, month, day) {
   var date = document.date_format;
   if (!date) date = "Y-m-d";
   date = date.replace("Y", year);
   date = date.replace("m", month < 10 ? '0'+month : month);
-  date = date.replace("M", js_get_month_name(month, true));
+  date = date.replace("M", planyo_get_month_name(month, true));
   date = date.replace("d", day < 10 ? '0'+day : day);
   return date;
 }
 
-function js_parse_date (date_str, format) {
+function planyo_parse_date (date_str, format) {
   //works with the following formats: Y/m/d, Y-m-d, d.m.Y, d M Y(EN), M d, Y(EN), m/d/Y
   var parsed = Date.parse(date_str);
   if ((!parsed || parsed == 'undefined') && format) {
@@ -134,12 +134,12 @@ function js_parse_date (date_str, format) {
   return parsed;
 }
 
-function js_get_day_info_for_month (month, year) {
+function planyo_get_day_info_for_month (month, year) {
   var now = new Date();
 
   var day_info = new Array();
   
-  var month_specs = js_get_month_specs (month, year);
+  var month_specs = planyo_get_month_specs (month, year);
   var day_iterator = month_specs [1] - month_specs [0] + 1;
   var days_in_month_left = month_specs [0] - 1;
   var month_iterator = -1; // starting last month unless day_iterator is 1
@@ -183,7 +183,7 @@ function js_get_day_info_for_month (month, year) {
   return day_info;
 }
 
-function js_show_calendar_picker (month, year, div_id, date_fun) {
+function planyo_show_calendar_picker (month, year, div_id, date_fun) {
   var now = new Date();
   if (month == null && year == null) {
     month = now.getMonth() + 1;
@@ -197,11 +197,11 @@ function js_show_calendar_picker (month, year, div_id, date_fun) {
     month = 1;
     year++;
   }
-  var day_info = js_get_day_info_for_month (month, year);
+  var day_info = planyo_get_day_info_for_month (month, year);
   
-  var div_code = "<table class='calpicker'><caption><a class='nav' href=\"javascript:js_show_calendar_picker("+(month-1)+", "+year+", '"+div_id+"','"+date_fun+"');\">&laquo;</a><a class='nav' href=\"javascript:js_show_calendar_picker("+(month+1)+","+year+", '"+div_id+"','"+date_fun+"');\">&raquo;</a> "+ js_get_month_name (month, false) +" " + year + "</caption><thead><tr>";
+  var div_code = "<table class='calpicker'><caption><a class='nav' href=\"javascript:planyo_show_calendar_picker("+(month-1)+", "+year+", '"+div_id+"','"+date_fun+"');\">&#160;&laquo;&#160;</a><a class='nav' href=\"javascript:planyo_show_calendar_picker("+(month+1)+","+year+", '"+div_id+"','"+date_fun+"');\">&#160;&raquo;&#160;</a> "+ planyo_get_month_name (month, false) +" " + year + "</caption><thead><tr>";
   for (var i = 0; i < 7; i++) {
-    div_code += "<th>" + js_get_day_name (i, true) + "</th>";
+    div_code += "<th>" + planyo_get_day_name (i, true) + "</th>";
   }
   div_code += "</thead><tbody>";
   for (var y = 0; y < 6; y++) {
@@ -216,7 +216,7 @@ function js_show_calendar_picker (month, year, div_id, date_fun) {
   document.getElementById (div_id).innerHTML = div_code;
 }
 
-function js_set_event(obj,event,fun,bubble) {
+function planyo_set_event(obj,event,fun,bubble) {
   if (obj) {
     if (obj.addEventListener)
       obj.addEventListener (event,eval(fun),bubble);
@@ -229,11 +229,11 @@ function js_set_event(obj,event,fun,bubble) {
   }
 }
 
-function js_get_prev_day (day, month, year, offset) {
+function planyo_get_prev_day (day, month, year, offset) {
   // returns an array: (day, month, year)
   // note: offset must be < 28
   
-  var specs = js_get_month_specs (month, year);
+  var specs = planyo_get_month_specs (month, year);
 
   var ret_val = new Array ();
   if (!offset) offset = 1;
@@ -254,11 +254,11 @@ function js_get_prev_day (day, month, year, offset) {
   return ret_val;
 }
 
-function js_get_next_day (day, month, year, offset) {
+function planyo_get_next_day (day, month, year, offset) {
   // returns an array: (day, month, year)
   // note: offset must be < 28
   
-  var specs = js_get_month_specs (month, year);
+  var specs = planyo_get_month_specs (month, year);
 
   var ret_val = new Array ();
   if (!offset) offset = 1;
@@ -282,7 +282,7 @@ function js_get_next_day (day, month, year, offset) {
 // returns an array (min, max) of min and max values of array
 // if array's values are an array of properties, property to be used can be specified
 // otherwise, leave property null
-function js_get_array_min_max(arr, property) {
+function planyo_get_array_min_max(arr, property) {
   var min;
   var max;
   var n = 0;
@@ -297,11 +297,11 @@ function js_get_array_min_max(arr, property) {
   return new Array(min,max);
 }
 
-function js_confirm_action_with_input (text) {
+function planyo_confirm_action_with_input (text) {
   return prompt (text);
 }
 
-function js_confirm_action(text) {
+function planyo_confirm_action(text) {
   if (confirm (text))
     return true;
   return false;
@@ -311,7 +311,7 @@ function elbyid (id) {
   return document.getElementById (id);
 }
 
-function get_item_coordinates (item) {
+function planyo_get_item_coordinates (item) {
   var left=0;
   var top=0;
   var right=0;
@@ -328,12 +328,12 @@ function get_item_coordinates (item) {
   return {left:left, top:top, right:right, bottom:bottom};
 }
 
-function js_dummy (e) {
+function planyo_dummy (e) {
   if(!e) e=event;
   if (e) e.cancelBubble=true;
 }
 
-function js_close_calendar () {
+function planyo_close_calendar () {
   if (document.current_picker) {
     var el = document.getElementById(document.current_picker+'cal');
     el.style.visibility = 'hidden';
@@ -341,17 +341,17 @@ function js_close_calendar () {
   }
 }
 
-function js_calendar_date_chosen (day, month, year) {
+function planyo_calendar_date_chosen (day, month, year) {
   var picker = document.getElementById(document.current_picker);
   if (picker.exclude_year)
-    picker.value = day+' '+js_get_month_name (month, false);
+    picker.value = day+' '+planyo_get_month_name (month, false);
   else
-    picker.value = js_output_date(year, month, day);
+    picker.value = planyo_output_date(year, month, day);
   if (document.current_picker_onchange)
     eval(document.current_picker_onchange);
   document.previous_month_picked = month;
   document.previous_year_picked = year;
-  js_close_calendar();
+  planyo_close_calendar();
   if(window.js_nav) {
     if (document.current_picker == 'start_date')
       js_nav(null,month, year);
@@ -360,11 +360,13 @@ function js_calendar_date_chosen (day, month, year) {
   }
 }
 
-function js_show_calendar (cal,onchange) {
+function planyo_show_calendar (cal,onchange) {
   var cal_el = document.getElementById(cal);
   var cal_ref_el = document.getElementById(cal+'calref');
-  var coords = cal_ref_el.getCoordinates ? cal_ref_el.getCoordinates() : get_item_coordinates(cal_ref_el);
-  var old_date = js_parse_date(cal_el.value, document.date_format);
+  var coords = cal_ref_el.getCoordinates ? cal_ref_el.getCoordinates() : planyo_get_item_coordinates(cal_ref_el);
+  if (document.is_mobile)
+    coords.left = '20';
+  var old_date = planyo_parse_date(cal_el.value, document.date_format);
   if (!cal_el.value) {
     if (!document.current_picker) {
       if (document.getElementById ('start_date'))
@@ -374,7 +376,7 @@ function js_show_calendar (cal,onchange) {
     }
     var picker = document.getElementById(document.current_picker);
     if (picker)
-      old_date = js_parse_date(picker.value, document.date_format);
+      old_date = planyo_parse_date(picker.value, document.date_format);
   }
   document.current_picker = cal;
   document.current_picker_onchange = onchange;
@@ -392,8 +394,24 @@ function js_show_calendar (cal,onchange) {
   }
   var cal_cal_el = document.getElementById(cal+'cal');
   if(cal_cal_el.parentNode != document.body) document.body.appendChild(cal_cal_el);
-  js_show_calendar_picker (month, year, cal+'cal', 'js_calendar_date_chosen');
+  planyo_show_calendar_picker (month, year, cal+'cal', 'planyo_calendar_date_chosen');
   cal_cal_el.style.left = coords.left+'px';
   cal_cal_el.style.top = (coords.bottom+5)+'px';
   cal_cal_el.style.visibility = 'visible';
+}
+
+function js_set_event(obj,event,fun,bubble) {
+  return planyo_set_event(obj,event,fun,bubble);
+}
+
+function js_dummy (e) {
+  return planyo_dummy (e);
+}
+
+function js_close_calendar () {
+  return planyo_close_calendar ();
+}
+
+function js_show_calendar (cal,onchange) {
+  return planyo_show_calendar (cal,onchange);
 }

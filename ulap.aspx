@@ -23,7 +23,7 @@ for each key in fields
     urlencoded = urlencoded & key & "=" & Server.UrlEncode(fields(key)) & "&"
   end if 
 next
-urlencoded = urlencoded & "modver=1.3";
+urlencoded = urlencoded & "modver=1.5";
 
 Dim xml as System.Net.HttpWebRequest
 Dim uri as new Uri(url)
