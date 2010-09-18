@@ -107,7 +107,7 @@ function planyo_show_hourglass(hide_element) {
     if (parent)
       var hourglass_element = document.createElement("div");
     hourglass_element.id = "hourglass_element";
-    hourglass_element.innerHTML = "<img src='"+get_full_planyo_file_path("hourglass.gif")+"' align='middle' />";
+    hourglass_element.innerHTML = "<div class='hourglass_img'></div>";
     parent.insertBefore(hourglass_element, hide_element);
   }
 }
@@ -512,6 +512,12 @@ function planyo_embed_resource_list(site_id) {
 }
 
 function planyo_embed_resource_desc(resource_id, site_id) {
+  if (!resource_id) {
+    if (planyo_isset (window.planyo_resource_id))
+      resource_id = window.planyo_resource_id;
+    else
+      resource_id = '';
+  }
   var form_url = get_full_planyo_file_path(ulap_script);
   var form_url_params = "ulap_url=http://www.planyo.com/rest/planyo-reservations.php&mode=display_single_resource_code&feedback_url=" + planyo_get_current_url() + "&resource_id="+resource_id+"&site_id="+site_id;
   planyo_embed_code (form_url, form_url_params);

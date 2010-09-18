@@ -334,8 +334,11 @@ function planyo_get_param(name) {
 }
 
 function get_full_planyo_file_path(name) {
-  if (planyo_settings.planyo_files_location.length == 0 || planyo_settings.planyo_files_location.lastIndexOf('/') == planyo_settings.planyo_files_location.length - 1)
-    return planyo_settings.planyo_files_location + name;
+  var loc = window.planyo_files_location;
+  if (!loc)
+    loc = planyo_settings.planyo_files_location;
+  if (loc.length == 0 || loc.lastIndexOf('/') == loc.length - 1)
+    return loc + name;
   else
-    return planyo_settings.planyo_files_location + '/' + name;
+    return loc + '/' + name;
 }

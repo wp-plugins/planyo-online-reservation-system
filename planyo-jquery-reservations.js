@@ -1,7 +1,7 @@
 // $Id$
 
 var planyo_settings = window;
-if (window.Drupal) {
+if (window.Drupal && !planyo_isset(window.planyo_dont_use_drupal_plugin)) {
   Drupal.behaviors.planyoBehavior = function (context) {
     planyo_settings = Drupal.settings.planyo;
     init_planyo();
@@ -42,6 +42,10 @@ function planyo_on_reservation_success(reservation_id, user_text) {
   }
   else {
     jQuery('#res_ok_msg').html(user_text);
+    if (planyo_isset(window.on_planyo_form_loaded)) {
+      document.reservation_id = reservation_id;
+      window.on_planyo_form_loaded('reservation_done');
+    }
   }
 }
  
@@ -50,6 +54,9 @@ function planyo_on_reservation_failure(error_text) {
    error_div.css('display','inline');
    error_div.html(error_text+"<p>");
    jQuery(window).scrollTop(0);
+   if (planyo_isset(window.on_planyo_form_loaded)) {
+     window.on_planyo_form_loaded('reservation_failure');
+   }
 }
  
 function planyo_get_current_url() {
@@ -64,7 +71,7 @@ function planyo_show_hourglass(hide_element) {
   if (hide_element && hide_element.length > 0) {
     document.planyo_ajax_call_hide_element = hide_element;
     hide_element.css('display', 'none');
-    hide_element.before("<div id='hourglass_element'><img src='" + get_full_planyo_file_path('hourglass.gif') + "' align='middle' /></div>");
+    hide_element.before("<div id='hourglass_element'><div class='hourglass_img'></div></div>");
   }
 }
 
@@ -138,6 +145,9 @@ function planyo_on_complete_show_status(txt) {
 
     if (planyo_isset(obj, 'data', 'redirect_location'))
       eval(obj['data']['redirect_location']);
+
+    if (planyo_isset(window.on_planyo_form_loaded))
+      window.on_planyo_form_loaded(planyo_get_param('mode'));
   }
   else {
     var error_div = jQuery('#res_error_msg');
@@ -282,7 +292,7 @@ function planyo_prefill_params(params) {
       if (value && jQuery('#box_' + name).length > 0)
 	jQuery('#box_' + name).val(value);
       if (value && name.indexOf('box_') == 0)
-        jQuery('#box_' + name.substr(4)).val(value);
+        jQuery('#' + name.substr(4)).val(value);
 
     }
   }
@@ -356,6 +366,8 @@ function planyo_form_loaded(code) {
 	jQuery('#price_info_div').css('display','none')
       }
     }
+    if (planyo_isset(window.on_planyo_form_loaded))
+      window.on_planyo_form_loaded(planyo_mode);
   }
 }
 
@@ -435,13 +447,19 @@ function planyo_embed_resource_list(site_id) {
 }
 
 function planyo_embed_resource_desc(resource_id, site_id) {
+  if (!resource_id) {
+    if (planyo_isset(window.planyo_resource_id))
+      resource_id = window.planyo_resource_id;
+    else
+      resource_id = '';
+  }
   var form_url = planyo_settings.ulap_script;
   var form_url_params = "ulap_url=http://www.planyo.com/rest/planyo-reservations.php&mode=display_single_resource_code&feedback_url=" + planyo_get_current_url() + "&resource_id=" + resource_id +"&site_id="+site_id;
   planyo_embed_code(form_url, form_url_params);
 }
 
 function init_planyo() {
-  if (!window.Drupal) {
+  if (!window.Drupal || planyo_isset(window.planyo_dont_use_drupal_plugin)) {
     planyo_settings.ulap_script = get_full_planyo_file_path(planyo_settings.ulap_script);
   }
   if (planyo_settings.planyo_site_id == 'demo')

@@ -91,7 +91,7 @@ function planyo_options() {
 		    <?php planyo_output_select_option('DK', 'Danish', 'planyo_language');?>
 		    <?php planyo_output_select_option('RO', 'Romanian', 'planyo_language');?>
         </select><br/>
-        <span class='description'>Choose one of the supported languages. You can also modify the templates (in your planyo administration panel) to display the language choice to the user or pass the language as a parameter in the URL (lang).</span>
+        <span class='description'>Choose one of the supported languages. You can also modify the templates (in your planyo administration panel) to display the language choice to the user or pass the language as shortcode parameter language (e.g. [planyo language='FR']) or a parameter in the URL (&lang=FR).</span>
         </td>
         </tr>
 
@@ -102,7 +102,7 @@ function planyo_options() {
 		    <?php planyo_output_select_option('resources', 'Resource list', 'default_mode', true);?>
 		    <?php planyo_output_select_option('empty', 'Do nothing', 'default_mode');?>
         </select><br/>
-        <span class='description'>Choose the initial (default) mode: 'Search box' to allow clients to search for available dates or 'Resource list' to display a list of all resources (in such case search must be initiated by embedding an extra search box -- see last step of integration in Planyo's admin panel). Choosing 'Do nothing' will not display anything by default but will require you to either pass the resource ID to the module as parameter in the URL (resource_id) or add an external search box or calendar preview.</span>
+        <span class='description'>Choose the initial (default) mode: 'Search box' to allow clients to search for available dates or 'Resource list' to display a list of all resources (in such case search must be initiated by embedding an extra search box -- see last step of integration in Planyo's admin panel). Choosing 'Do nothing' will not display anything by default but will require you to either pass the resource ID to the module as shortcode parameter resource_id (e.g. [planyo resource_id='xxx']) or a parameter in the URL (resource_id) or add an external search box or calendar preview.</span>
         </td>
         </tr>
 
@@ -148,25 +148,41 @@ add_action('init', 'planyo_init');
 $planyo_directory = str_replace(basename(__FILE__),"",plugin_basename(__FILE__));
 require_once(WP_PLUGIN_DIR.'/'.$planyo_directory.'planyo-plugin-impl.php');
 
-function planyo_code() {
+function planyo_code($atts) {
   global $planyo_always_use_ajax, $planyo_site_id, $planyo_default_mode, $planyo_files_location, $planyo_language, $planyo_sort_fields, $planyo_extra_search_fields, $planyo_resource_id, $planyo_directory, $planyo_js_library_used, $planyo_include_js_library;
+
+  ob_start();
+
   // change the following values to match your settings
   $planyo_site_id = get_option('site_id');  // ID of your planyo site. It can be a number or the default value ('demo') to see demonstration of the plugin
   $planyo_files_location = WP_PLUGIN_URL.'/'.$planyo_directory; // relative or absolute directory where the planyo files are kept
-  $planyo_language = get_option('planyo_language');  // you can optionally change the language here, e.g. 'FR' or 'ES' or pass the languge in the 'lang' parameter
+  if (isset($atts) && isset($atts['language']))
+    $planyo_language = $atts['language'];
+  else
+    $planyo_language = get_option('planyo_language');  // you can optionally change the language here, e.g. 'FR' or 'ES' or pass the languge in the 'lang' parameter
   $planyo_always_use_ajax = get_option('seo_friendly')=='1' ? false : true;  // set to true to use AJAX to display resource list and resource details views
   $planyo_sort_fields = get_option('sort_fields');  // comma-separated sort fields -- a single field will hide the sort dropdown box
   $planyo_extra_search_fields = get_option('extra_search_fields');  // comma-separated extra fields in the search box
-  $planyo_default_mode = get_option('default_mode');  // initial (defualt) plugin mode; one of: 'resources', 'search', 'empty'
+  if (isset($atts) && isset($atts['mode']))
+    $planyo_default_mode = $atts['mode'];
+  else
+    $planyo_default_mode = get_option('default_mode');  // initial (defualt) plugin mode; one of: 'resources', 'search', 'empty'
   $planyo_js_library_used = (!get_option('js_framework') || get_option('js_framework') == 'jquery' || get_option('js_framework') == 'jquery-noinclude') ? 'jquery' : 'mootools';  // jquery or mootools
   $planyo_include_js_library = !get_option('js_framework') || get_option('js_framework') == 'jquery' || get_option('js_framework') == 'mootools'; // set to false if you already include jQuery on your site
-  $planyo_resource_id = null;  // optional: ID of the resource being reserved
+  if (isset($atts) && isset($atts['resource_id']))
+    $planyo_resource_id = $atts['resource_id'];
+  else
+    $planyo_resource_id = null;  // optional: ID of the resource being reserved
 
 ?>
 <div id='planyo_plugin_code'>
 <?php planyo_setup();?>
 </div>
 <?php
+
+  $str = ob_get_contents();
+  ob_end_clean();
+  return $str;
 }
 
 add_shortcode('planyo', 'planyo_code');

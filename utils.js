@@ -297,16 +297,6 @@ function planyo_get_array_min_max(arr, property) {
   return new Array(min,max);
 }
 
-function planyo_confirm_action_with_input (text) {
-  return prompt (text);
-}
-
-function planyo_confirm_action(text) {
-  if (confirm (text))
-    return true;
-  return false;
-}
-
 function elbyid (id) {
   return document.getElementById (id);
 }

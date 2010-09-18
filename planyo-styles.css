@@ -414,3 +414,11 @@
 #planyo_mobile_switch {
     margin-top:20px;
 }
+
+#planyo_content .hourglass_img, #planyo_plugin_code .hourglass_img {
+    margin-top:40px;
+    margin-left:40px;
+    height:24px;
+    width:24px;
+    background:transparent url(hourglass.gif) no-repeat scroll 0 0;
+}
