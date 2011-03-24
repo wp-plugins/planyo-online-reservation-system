@@ -12,8 +12,10 @@ end if
 dim url = fields("ulap_url")
 
 if instr(url, "http://www.planyo.com") <= 0 then
-  Response.Write("Error: Call to " & url & " not allowed")
-  Response.End
+  if instr(url, "https://www.planyo.com") <= 0 then
+    Response.Write("Error: Call to " & url & " not allowed")
+    Response.End
+  end if
 end if 
 
 dim urlencoded = ""
@@ -23,7 +25,7 @@ for each key in fields
     urlencoded = urlencoded & key & "=" & Server.UrlEncode(fields(key)) & "&"
   end if 
 next
-urlencoded = urlencoded & "modver=1.5";
+urlencoded = urlencoded & "modver=1.6";
 
 Dim xml as System.Net.HttpWebRequest
 Dim uri as new Uri(url)

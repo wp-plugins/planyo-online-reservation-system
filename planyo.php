@@ -3,7 +3,7 @@
 Plugin Name: Planyo online reservation system
 Plugin URI: http://www.planyo.com/wordpress-reservation-system
 Description: This plugin embeds the Planyo.com online reservation system. Before using it, you'll need to create an account at planyo.com. Please see <a href='http://www.planyo.com/wordpress-reservation-system'>http://www.planyo.com/wordpress-reservation-system</a> for more info.
-Version: 1.6
+Version: 1.7
 Author: Xtreeme GmbH
 Author URI: http://www.planyo.com/
 */
@@ -86,10 +86,15 @@ function planyo_options() {
 		    <?php planyo_output_select_option('DE', 'German', 'planyo_language');?>
 		    <?php planyo_output_select_option('PL', 'Polish', 'planyo_language');?>
 		    <?php planyo_output_select_option('SE', 'Swedish', 'planyo_language');?>
+		    <?php planyo_output_select_option('NO', 'Norwegian', 'planyo_language');?>
 		    <?php planyo_output_select_option('FI', 'Finnish', 'planyo_language');?>
 		    <?php planyo_output_select_option('IS', 'Icelandic', 'planyo_language');?>
 		    <?php planyo_output_select_option('DK', 'Danish', 'planyo_language');?>
 		    <?php planyo_output_select_option('RO', 'Romanian', 'planyo_language');?>
+		    <?php planyo_output_select_option('RU', 'Russian', 'planyo_language');?>
+		    <?php planyo_output_select_option('NL', 'Dutch', 'planyo_language');?>
+		    <?php planyo_output_select_option('EL', 'Greek', 'planyo_language');?>
+		    <?php planyo_output_select_option('PT', 'Portuguese', 'planyo_language');?>
         </select><br/>
         <span class='description'>Choose one of the supported languages. You can also modify the templates (in your planyo administration panel) to display the language choice to the user or pass the language as shortcode parameter language (e.g. [planyo language='FR']) or a parameter in the URL (&lang=FR).</span>
         </td>
@@ -156,6 +161,8 @@ function planyo_code($atts) {
   // change the following values to match your settings
   $planyo_site_id = get_option('site_id');  // ID of your planyo site. It can be a number or the default value ('demo') to see demonstration of the plugin
   $planyo_files_location = WP_PLUGIN_URL.'/'.$planyo_directory; // relative or absolute directory where the planyo files are kept
+  if ($_SERVER['HTTPS'] == 'on')
+    $planyo_files_location = str_replace("http:","https:",$planyo_files_location);
   if (isset($atts) && isset($atts['language']))
     $planyo_language = $atts['language'];
   else

@@ -1,21 +1,15 @@
 // $Id$
 
 var planyo_settings = window;
-if (window.Drupal && !planyo_isset(window.planyo_dont_use_drupal_plugin)) {
-  Drupal.behaviors.planyoBehavior = function (context) {
-    planyo_settings = Drupal.settings.planyo;
-    init_planyo();
-  }
-}
-else {
-  jQuery(document).ready(init_planyo);
-}
+jQuery(document).ready(init_planyo);
 
 function planyo$(x) {
   return jQuery(x);
 }
 
 function planyo_get_param(name) {
+  if (planyo_isset(window.planyo_overrides) && window.planyo_overrides[name])
+    return window.planyo_overrides[name];
   name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
   var regexS = "[\\?&]"+name+"=([^&#]*)";
   var regex = new RegExp(regexS);
@@ -32,6 +26,7 @@ function planyo_get_form_data(obj) {
 }
 
 function planyo_on_reservation_success(reservation_id, user_text) {
+  jQuery('#planyo_content').children().css('display','none');
   jQuery('#res_error_msg').css('display','none');
   jQuery('#res_ok_msg').css('display','inline');
   jQuery('#reserve_form').css('display','none');
@@ -51,7 +46,7 @@ function planyo_on_reservation_success(reservation_id, user_text) {
  
 function planyo_on_reservation_failure(error_text) {
    var error_div = jQuery('#res_error_msg');
-   error_div.css('display','inline');
+   error_div.css('display','block');
    error_div.html(error_text+"<p>");
    jQuery(window).scrollTop(0);
    if (planyo_isset(window.on_planyo_form_loaded)) {
@@ -89,7 +84,7 @@ function planyo_hide_hourglass() {
 function planyo_on_request_failure() {
   planyo_hide_hourglass();
   var error_div = jQuery('#res_error_msg');
-  error_div.css('display', 'inline');
+  error_div.css('display', 'block');
   error_div.html("Unknown error in " + planyo_settings.ulap_script + "<p>");
 }
 
@@ -102,9 +97,24 @@ function planyo_unserialize(url) {
   var pHash = {};
   for(var i = 0; i < pArray.length; i++) {
     var temp = pArray[i].split("=");
-    pHash[temp[0]] = decodeURIComponent(temp[1]).replace(/\+/g, ' ');
+    if (temp[0] != 'q' || !window.Drupal)
+      pHash[temp[0]] = decodeURIComponent(temp[1]).replace(/\+/g, ' ');
   }
   return pHash;
+}
+
+function planyo_get_cookie(c_name) {
+  if (document.cookie.length > 0) {
+    c_start = document.cookie.indexOf(c_name + "=");
+    if (c_start != -1) {
+      c_start = c_start + c_name.length+1;
+      c_end = document.cookie.indexOf(";", c_start);
+      if (c_end == -1) 
+        c_end = document.cookie.length;
+      return unescape(document.cookie.substring(c_start, c_end));
+    }
+  }
+  return "";
 }
 
 function planyo_send_request(data, on_complete_function, hide_item) {
@@ -113,11 +123,15 @@ function planyo_send_request(data, on_complete_function, hide_item) {
   if (req_data.indexOf('feedback_url=') == -1)
     req_data += "&feedback_url=" + planyo_get_current_url();
   if (req_data.indexOf('ulap_url=') == -1)
-    req_data += "&ulap_url=http://www.planyo.com/rest/planyo-reservations.php";
+    req_data += "&ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php";
   if (planyo_settings.planyo_language)
     req_data += "&language=" + planyo_settings.planyo_language.toUpperCase();
+  var shopping_cart_id = planyo_get_cookie('planyo_cart_id');
+  if (shopping_cart_id && req_data.indexOf('cart_id=') == -1)
+    req_data += "&cart_id=" + shopping_cart_id + "&first_reservation_id=" + planyo_get_cookie('planyo_first_reservation_id');
   req_data += "&user_agent=" + navigator.userAgent;
-  jQuery.post(planyo_settings.ulap_script, planyo_unserialize(req_data),
+  var req_data_arr = planyo_unserialize(req_data);
+  jQuery.post(planyo_settings.ulap_script, req_data_arr,
 	    function(data, status) {
 	      if (status == "success")
 		on_complete_function(data);
@@ -155,7 +169,7 @@ function planyo_on_complete_show_status(txt) {
       jQuery('#planyo_content').append("<div id='res_error_msg'></div>");
       error_div = jQuery('#res_error_msg');
     }
-    error_div.css('display', 'inline');
+    error_div.css('display', 'block');
     error_div.html(obj['response_message']);
   }
 }
@@ -215,7 +229,7 @@ function planyo_on_search_success(results) {
  
 function planyo_on_search_failure(error_text) {
    var error_div = jQuery('#res_error_msg');
-   error_div.css('display', 'inline');
+   error_div.css('display', 'block');
    error_div.html(error_text + '<p>');
    jQuery('#search_results').html('');
    jQuery(window).scrollTop(0);
@@ -248,9 +262,13 @@ function planyo_send_search_form() {
   return false;
 }
 
+function planyo_is_special_mode(mode) {
+  return (mode == "verify_email" || mode == "payment_confirmation" || mode == "cancel" || mode == "cancel_code" || mode == "reservation_details" || mode == "payment_form" || mode == "reservation_list" || mode == "show_cart" || mode == "checkout");
+}
+
 function planyo_init_special_modes() {
   var mode = planyo_get_param('mode');
-  if (mode == "verify_email" || mode == "payment_confirmation" || mode == "cancel" || mode == "cancel_code" || mode == "reservation_details" || mode == "payment_form") {
+  if (planyo_is_special_mode(mode)) {
     if (mode == "verify_email") {
       planyo_init_verify_email_mode();
     }
@@ -263,11 +281,20 @@ function planyo_init_special_modes() {
     else if (mode == 'reservation_details') {
       planyo_embed_reservation_details(planyo_settings.planyo_site_id, planyo_get_param('reservation_id'), planyo_get_param('user_id'));
     }
+    else if (mode == 'reservation_list') {
+      planyo_embed_reservation_list(planyo_settings.planyo_site_id, planyo_get_param('reservation_id'), planyo_get_param('user_id'));
+    }
     else if (mode == 'cancel_code') {
       planyo_embed_cancel_code(planyo_settings.planyo_site_id, planyo_get_param('reservation_id'), planyo_get_param('c'), planyo_get_param('user_id'), planyo_get_param('resource_id'));
     }
     else if (mode == 'payment_form') {
       planyo_embed_payment_form(planyo_settings.planyo_site_id, planyo_get_param('reservation_id'), planyo_get_param('user_id'), planyo_get_param('auto_redirect'));
+    }
+    else if (mode == 'show_cart') {
+      planyo_embed_cart_code(planyo_settings.planyo_site_id, planyo_get_param('cart_id'), planyo_get_param('first_reservation_id'), planyo_get_param('remove_reservation_id'));
+    }
+    else if (mode == 'checkout') {
+      planyo_embed_checkout_code(planyo_settings.planyo_site_id, planyo_get_param('cart_id'), planyo_get_param('first_reservation_id'));
     }
     return true;
   }
@@ -275,7 +302,7 @@ function planyo_init_special_modes() {
 }
 
 function planyo_get_phone_codes(name) {
-return "<select id='" + name + "' name='" + name + "' ><option selected value='-1'>-- Country code --&nbsp;</option><option  value='93'>Afghanistan (93)&nbsp;</option><option  value='355'>Albania (355)&nbsp;</option><option  value='213'>Algeria (213)&nbsp;</option><option  value='376'>Andorra (376)&nbsp;</option><option  value='244'>Angola (244)&nbsp;</option><option  value='264'>Anguilla (264)&nbsp;</option><option  value='672'>Antarctica (672)&nbsp;</option><option  value='54'>Argentina (54)&nbsp;</option><option  value='374'>Armenia (374)&nbsp;</option><option  value='297'>Aruba (297)&nbsp;</option><option  value='61'>Australia (61)&nbsp;</option><option  value='43'>Austria (43)&nbsp;</option><option  value='994'>Azerbaijan (994)&nbsp;</option><option  value='242'>Bahamas (242)&nbsp;</option><option  value='973'>Bahrain (973)&nbsp;</option><option  value='880'>Bangladesh (880)&nbsp;</option><option  value='246'>Barbados (246)&nbsp;</option><option  value='375'>Belarus (375)&nbsp;</option><option  value='32'>Belgium (32)&nbsp;</option><option  value='501'>Belize (501)&nbsp;</option><option  value='441'>Bermuda (441)&nbsp;</option><option  value='975'>Bhutan (975)&nbsp;</option><option  value='591'>Bolivia (591)&nbsp;</option><option  value='267'>Botswana (267)&nbsp;</option><option  value='55'>Brazil (55)&nbsp;</option><option  value='673'>Brunei (673)&nbsp;</option><option  value='359'>Bulgaria (359)&nbsp;</option><option  value='226'>Burkina Faso (226)&nbsp;</option><option  value='257'>Burundi (257)&nbsp;</option><option  value='855'>Cambodia (855)&nbsp;</option><option  value='237'>Cameroon (237)&nbsp;</option><option  value='1'>Canada (1)&nbsp;</option><option  value='56'>Chile (56)&nbsp;</option><option  value='86'>China (86)&nbsp;</option><option  value='57'>Colombia (57)&nbsp;</option><option  value='242'>Congo (242)&nbsp;</option><option  value='682'>Cook Islands (682)&nbsp;</option><option  value='506'>Costa Rica (506)&nbsp;</option><option  value='385'>Croatia (385)&nbsp;</option><option  value='53'>Cuba (53)&nbsp;</option><option  value='599'>Curacao (599)&nbsp;</option><option  value='357'>Cyprus (357)&nbsp;</option><option  value='420'>Czech Republic (420)&nbsp;</option><option  value='45'>Denmark (45)&nbsp;</option><option  value='246'>Diego Garcia (246)&nbsp;</option><option  value='253'>Djibouti (253)&nbsp;</option><option  value='809'>Dominica (809)&nbsp;</option><option  value='593'>Ecuador (593)&nbsp;</option><option  value='20'>Egypt (20)&nbsp;</option><option  value='503'>El Salvador (503)&nbsp;</option><option  value='372'>Estonia (372)&nbsp;</option><option  value='298'>Faeroe Islands (298)&nbsp;</option><option  value='500'>Falkland (500)&nbsp;</option><option  value='679'>Fiji Islands (679)&nbsp;</option><option  value='358'>Finland (358)&nbsp;</option><option  value='33'>France (33)&nbsp;</option><option  value='596'>Antilles  (596)&nbsp;</option><option  value='594'>Guiana (594)&nbsp;</option><option  value='241'>Gabon Republic (241)&nbsp;</option><option  value='220'>Gambia (220)&nbsp;</option><option  value='995'>Georgia (995)&nbsp;</option><option  value='49'>Germany (49)&nbsp;</option><option  value='233'>Ghana (233)&nbsp;</option><option  value='350'>Gibraltar (350)&nbsp;</option><option  value='30'>Greece (30)&nbsp;</option><option  value='299'>Greenland (299)&nbsp;</option><option  value='473'>Grenada (473)&nbsp;</option><option  value='590'>Guadeloupe (590)&nbsp;</option><option  value='671'>Guam (671)&nbsp;</option><option  value='502'>Guatemala (502)&nbsp;</option><option  value='592'>Guyana (592)&nbsp;</option><option  value='509'>Haiti (509)&nbsp;</option><option  value='504'>Honduras (504)&nbsp;</option><option  value='852'>Hong Kong (852)&nbsp;</option><option  value='36'>Hungary (36)&nbsp;</option><option  value='354'>Iceland (354)&nbsp;</option><option  value='91'>India (91)&nbsp;</option><option  value='62'>Indonesia (62)&nbsp;</option><option  value='98'>Iran (98)&nbsp;</option><option  value='964'>Iraq (964)&nbsp;</option><option  value='353'>Ireland (353)&nbsp;</option><option  value='972'>Israel (972)&nbsp;</option><option  value='39'>Italy (39)&nbsp;</option><option  value='876'>Jamaica (876)&nbsp;</option><option  value='81'>Japan Idc (81)&nbsp;</option><option  value='81'>Japan Kdd (81)&nbsp;</option><option  value='962'>Jordan (962)&nbsp;</option><option  value='7'>Kazakhstan (7)&nbsp;</option><option  value='254'>Kenya (254)&nbsp;</option><option  value='686'>Kiribati (686)&nbsp;</option><option  value='850'>Korea, North (850)&nbsp;</option><option  value='82'>Korea, South (82)&nbsp;</option><option  value='965'>Kuwait (965)&nbsp;</option><option  value='7'>Kyrgyzstan (7)&nbsp;</option><option  value='856'>Laos (856)&nbsp;</option><option  value='371'>Latvia (371)&nbsp;</option><option  value='961'>Lebanon (961)&nbsp;</option><option  value='266'>Lesotho (266)&nbsp;</option><option  value='231'>Liberia (231)&nbsp;</option><option  value='218'>Libya (218)&nbsp;</option><option  value='423'>Liechtenstein (423)&nbsp;</option><option  value='370'>Lithuania (370)&nbsp;</option><option  value='352'>Luxembourg (352)&nbsp;</option><option  value='853'>Macao (853)&nbsp;</option><option  value='389'>Macedonia (389)&nbsp;</option><option  value='261'>Madagascar (261)&nbsp;</option><option  value='265'>Malawi (265)&nbsp;</option><option  value='60'>Malaysia (60)&nbsp;</option><option  value='960'>Maldives (960)&nbsp;</option><option  value='223'>Mali Republic (223)&nbsp;</option><option  value='356'>Malta (356)&nbsp;</option><option  value='692'>Marshall Islands (692)&nbsp;</option><option  value='222'>Mauritania (222)&nbsp;</option><option  value='230'>Mauritius (230)&nbsp;</option><option  value='269'>Mayotte Island (269)&nbsp;</option><option  value='52'>Mexico (52)&nbsp;</option><option  value='691'>Micronesia (691)&nbsp;</option><option  value='373'>Moldova (373)&nbsp;</option><option  value='33'>Monaco (33)&nbsp;</option><option  value='473'>Montserrat (473)&nbsp;</option><option  value='212'>Morocco (212)&nbsp;</option><option  value='258'>Mozambique (258)&nbsp;</option><option  value='95'>Myanmar (95)&nbsp;</option><option  value='264'>Namibia (264)&nbsp;</option><option  value='674'>Nauru (674)&nbsp;</option><option  value='977'>Nepal (977)&nbsp;</option><option  value='31'>Netherlands (31)&nbsp;</option><option  value='599'>Antilles (599)&nbsp;</option><option  value='687'>New Caledonia (687)&nbsp;</option><option  value='64'>New Zealand (64)&nbsp;</option><option  value='505'>Nicaragua (505)&nbsp;</option><option  value='234'>Nigeria (234)&nbsp;</option><option  value='227'>Niger Republic (227)&nbsp;</option><option  value='683'>Niue (683)&nbsp;</option><option  value='672'>Norfolk Island (672)&nbsp;</option><option  value='47'>Norway (47)&nbsp;</option><option  value='968'>Oman (968)&nbsp;</option><option  value='92'>Pakistan (92)&nbsp;</option><option  value='680'>Palau (680)&nbsp;</option><option  value='595'>Paraguay (595)&nbsp;</option><option  value='51'>Peru (51)&nbsp;</option><option  value='63'>Philippines (63)&nbsp;</option><option  value='48'>Poland (48)&nbsp;</option><option  value='351'>Portugal (351)&nbsp;</option><option  value='787'>Puerto Rico (787)&nbsp;</option><option  value='974'>Qatar (974)&nbsp;</option><option  value='262'>Reunion Island (262)&nbsp;</option><option  value='40'>Romania (40)&nbsp;</option><option  value='7'>Russia (7)&nbsp;</option><option  value='250'>Rwanda (250)&nbsp;</option><option  value='599'>St Eustatius (599)&nbsp;</option><option  value='290'>St Helena (290)&nbsp;</option><option  value='758'>St Lucia (758)&nbsp;</option><option  value='599'>St Maarten (599)&nbsp;</option><option  value='809'>St Vincent (809)&nbsp;</option><option  value='684'>Samoa (684)&nbsp;</option><option  value='378'>San Marino (378)&nbsp;</option><option  value='239'>Sao Tome (239)&nbsp;</option><option  value='966'>Saudi Arabia (966)&nbsp;</option><option  value='221'>Senegal (221)&nbsp;</option><option  value='232'>Sierra Leone (232)&nbsp;</option><option  value='65'>Singapore (65)&nbsp;</option><option  value='421'>Slovakia (421)&nbsp;</option><option  value='386'>Slovenia (386)&nbsp;</option><option  value='677'>Solomon Islands (677)&nbsp;</option><option  value='252'>Somalia (252)&nbsp;</option><option  value='27'>South Africa (27)&nbsp;</option><option  value='34'>Spain (34)&nbsp;</option><option  value='94'>Sri Lanka (94)&nbsp;</option><option  value='249'>Sudan (249)&nbsp;</option><option  value='597'>Suriname (597)&nbsp;</option><option  value='268'>Swaziland (268)&nbsp;</option><option  value='46'>Sweden (46)&nbsp;</option><option  value='41'>Switzerland (41)&nbsp;</option><option  value='963'>Syria (963)&nbsp;</option><option  value='886'>Taiwan (886)&nbsp;</option><option  value='7'>Tajikistan (7)&nbsp;</option><option  value='255'>Tanzania (255)&nbsp;</option><option  value='66'>Thailand (66)&nbsp;</option><option  value='228'>Togo (228)&nbsp;</option><option  value='676'>Tonga Islands (676)&nbsp;</option><option  value='216'>Tunisia (216)&nbsp;</option><option  value='90'>Turkey (90)&nbsp;</option><option  value='993'>Turkmenistan (993)&nbsp;</option><option  value='688'>Tuvalu (688)&nbsp;</option><option  value='256'>Uganda (256)&nbsp;</option><option  value='380'>Ukraine (380)&nbsp;</option><option  value='44'>UK (44)&nbsp;</option><option  value='1'>USA (1)&nbsp;</option><option  value='598'>Uruguay (598)&nbsp;</option><option  value='998'>Uzbekistan (998)&nbsp;</option><option  value='678'>Vanuatu (678)&nbsp;</option><option  value='39'>Vatican City (39)&nbsp;</option><option  value='58'>Venezuela (58)&nbsp;</option><option  value='84'>Vietnam (84)&nbsp;</option><option  value='681'>Wallis (681)&nbsp;</option><option  value='685'>Western Samoa (685)&nbsp;</option><option  value='967'>Yemen (967)&nbsp;</option><option  value='381'>Serbia (381)&nbsp;</option><option  value='260'>Zambia (260)&nbsp;</option><option  value='263'>Zimbabwe (263)&nbsp;</option></select> ";
+return "<select id='" + name + "' name='" + name + "' ><option selected value='-1'>-- Country code --&nbsp;</option><option  value='93'>Afghanistan (93)&nbsp;</option><option  value='355'>Albania (355)&nbsp;</option><option  value='213'>Algeria (213)&nbsp;</option><option  value='376'>Andorra (376)&nbsp;</option><option  value='244'>Angola (244)&nbsp;</option><option  value='264'>Anguilla (264)&nbsp;</option><option  value='672'>Antarctica (672)&nbsp;</option><option  value='54'>Argentina (54)&nbsp;</option><option  value='374'>Armenia (374)&nbsp;</option><option  value='297'>Aruba (297)&nbsp;</option><option  value='61'>Australia (61)&nbsp;</option><option  value='43'>Austria (43)&nbsp;</option><option  value='994'>Azerbaijan (994)&nbsp;</option><option  value='242'>Bahamas (242)&nbsp;</option><option  value='973'>Bahrain (973)&nbsp;</option><option  value='880'>Bangladesh (880)&nbsp;</option><option  value='246'>Barbados (246)&nbsp;</option><option  value='375'>Belarus (375)&nbsp;</option><option  value='32'>Belgium (32)&nbsp;</option><option  value='501'>Belize (501)&nbsp;</option><option  value='441'>Bermuda (441)&nbsp;</option><option  value='975'>Bhutan (975)&nbsp;</option><option  value='591'>Bolivia (591)&nbsp;</option><option  value='267'>Botswana (267)&nbsp;</option><option  value='55'>Brazil (55)&nbsp;</option><option  value='673'>Brunei (673)&nbsp;</option><option  value='359'>Bulgaria (359)&nbsp;</option><option  value='226'>Burkina Faso (226)&nbsp;</option><option  value='257'>Burundi (257)&nbsp;</option><option  value='855'>Cambodia (855)&nbsp;</option><option  value='237'>Cameroon (237)&nbsp;</option><option  value='1'>Canada / USA (1)&nbsp;</option><option  value='56'>Chile (56)&nbsp;</option><option  value='86'>China (86)&nbsp;</option><option  value='57'>Colombia (57)&nbsp;</option><option  value='242'>Congo (242)&nbsp;</option><option  value='682'>Cook Islands (682)&nbsp;</option><option  value='506'>Costa Rica (506)&nbsp;</option><option  value='385'>Croatia (385)&nbsp;</option><option  value='53'>Cuba (53)&nbsp;</option><option  value='599'>Curacao (599)&nbsp;</option><option  value='357'>Cyprus (357)&nbsp;</option><option  value='420'>Czech Republic (420)&nbsp;</option><option  value='45'>Denmark (45)&nbsp;</option><option  value='246'>Diego Garcia (246)&nbsp;</option><option  value='253'>Djibouti (253)&nbsp;</option><option  value='809'>Dominica (809)&nbsp;</option><option  value='593'>Ecuador (593)&nbsp;</option><option  value='20'>Egypt (20)&nbsp;</option><option  value='503'>El Salvador (503)&nbsp;</option><option  value='372'>Estonia (372)&nbsp;</option><option  value='298'>Faeroe Islands (298)&nbsp;</option><option  value='500'>Falkland (500)&nbsp;</option><option  value='679'>Fiji Islands (679)&nbsp;</option><option  value='358'>Finland (358)&nbsp;</option><option  value='33'>France (33)&nbsp;</option><option  value='596'>Antilles  (596)&nbsp;</option><option  value='594'>Guiana (594)&nbsp;</option><option  value='241'>Gabon Republic (241)&nbsp;</option><option  value='220'>Gambia (220)&nbsp;</option><option  value='995'>Georgia (995)&nbsp;</option><option  value='49'>Germany (49)&nbsp;</option><option  value='233'>Ghana (233)&nbsp;</option><option  value='350'>Gibraltar (350)&nbsp;</option><option  value='30'>Greece (30)&nbsp;</option><option  value='299'>Greenland (299)&nbsp;</option><option  value='473'>Grenada (473)&nbsp;</option><option  value='590'>Guadeloupe (590)&nbsp;</option><option  value='671'>Guam (671)&nbsp;</option><option  value='502'>Guatemala (502)&nbsp;</option><option  value='592'>Guyana (592)&nbsp;</option><option  value='509'>Haiti (509)&nbsp;</option><option  value='504'>Honduras (504)&nbsp;</option><option  value='852'>Hong Kong (852)&nbsp;</option><option  value='36'>Hungary (36)&nbsp;</option><option  value='354'>Iceland (354)&nbsp;</option><option  value='91'>India (91)&nbsp;</option><option  value='62'>Indonesia (62)&nbsp;</option><option  value='98'>Iran (98)&nbsp;</option><option  value='964'>Iraq (964)&nbsp;</option><option  value='353'>Ireland (353)&nbsp;</option><option  value='972'>Israel (972)&nbsp;</option><option  value='39'>Italy (39)&nbsp;</option><option  value='876'>Jamaica (876)&nbsp;</option><option  value='81'>Japan Idc (81)&nbsp;</option><option  value='81'>Japan Kdd (81)&nbsp;</option><option  value='962'>Jordan (962)&nbsp;</option><option  value='7'>Kazakhstan (7)&nbsp;</option><option  value='254'>Kenya (254)&nbsp;</option><option  value='686'>Kiribati (686)&nbsp;</option><option  value='850'>Korea, North (850)&nbsp;</option><option  value='82'>Korea, South (82)&nbsp;</option><option  value='965'>Kuwait (965)&nbsp;</option><option  value='7'>Kyrgyzstan (7)&nbsp;</option><option  value='856'>Laos (856)&nbsp;</option><option  value='371'>Latvia (371)&nbsp;</option><option  value='961'>Lebanon (961)&nbsp;</option><option  value='266'>Lesotho (266)&nbsp;</option><option  value='231'>Liberia (231)&nbsp;</option><option  value='218'>Libya (218)&nbsp;</option><option  value='423'>Liechtenstein (423)&nbsp;</option><option  value='370'>Lithuania (370)&nbsp;</option><option  value='352'>Luxembourg (352)&nbsp;</option><option  value='853'>Macao (853)&nbsp;</option><option  value='389'>Macedonia (389)&nbsp;</option><option  value='261'>Madagascar (261)&nbsp;</option><option  value='265'>Malawi (265)&nbsp;</option><option  value='60'>Malaysia (60)&nbsp;</option><option  value='960'>Maldives (960)&nbsp;</option><option  value='223'>Mali Republic (223)&nbsp;</option><option  value='356'>Malta (356)&nbsp;</option><option  value='692'>Marshall Islands (692)&nbsp;</option><option  value='222'>Mauritania (222)&nbsp;</option><option  value='230'>Mauritius (230)&nbsp;</option><option  value='269'>Mayotte Island (269)&nbsp;</option><option  value='52'>Mexico (52)&nbsp;</option><option  value='691'>Micronesia (691)&nbsp;</option><option  value='373'>Moldova (373)&nbsp;</option><option  value='33'>Monaco (33)&nbsp;</option><option  value='473'>Montserrat (473)&nbsp;</option><option  value='212'>Morocco (212)&nbsp;</option><option  value='258'>Mozambique (258)&nbsp;</option><option  value='95'>Myanmar (95)&nbsp;</option><option  value='264'>Namibia (264)&nbsp;</option><option  value='674'>Nauru (674)&nbsp;</option><option  value='977'>Nepal (977)&nbsp;</option><option  value='31'>Netherlands (31)&nbsp;</option><option  value='599'>Antilles (599)&nbsp;</option><option  value='687'>New Caledonia (687)&nbsp;</option><option  value='64'>New Zealand (64)&nbsp;</option><option  value='505'>Nicaragua (505)&nbsp;</option><option  value='234'>Nigeria (234)&nbsp;</option><option  value='227'>Niger Republic (227)&nbsp;</option><option  value='683'>Niue (683)&nbsp;</option><option  value='672'>Norfolk Island (672)&nbsp;</option><option  value='47'>Norway (47)&nbsp;</option><option  value='968'>Oman (968)&nbsp;</option><option  value='92'>Pakistan (92)&nbsp;</option><option  value='680'>Palau (680)&nbsp;</option><option  value='595'>Paraguay (595)&nbsp;</option><option  value='51'>Peru (51)&nbsp;</option><option  value='63'>Philippines (63)&nbsp;</option><option  value='48'>Poland (48)&nbsp;</option><option  value='351'>Portugal (351)&nbsp;</option><option  value='787'>Puerto Rico (787)&nbsp;</option><option  value='974'>Qatar (974)&nbsp;</option><option  value='262'>Reunion Island (262)&nbsp;</option><option  value='40'>Romania (40)&nbsp;</option><option  value='7'>Russia (7)&nbsp;</option><option  value='250'>Rwanda (250)&nbsp;</option><option  value='599'>St Eustatius (599)&nbsp;</option><option  value='290'>St Helena (290)&nbsp;</option><option  value='758'>St Lucia (758)&nbsp;</option><option  value='599'>St Maarten (599)&nbsp;</option><option  value='809'>St Vincent (809)&nbsp;</option><option  value='684'>Samoa (684)&nbsp;</option><option  value='378'>San Marino (378)&nbsp;</option><option  value='239'>Sao Tome (239)&nbsp;</option><option  value='966'>Saudi Arabia (966)&nbsp;</option><option  value='221'>Senegal (221)&nbsp;</option><option  value='232'>Sierra Leone (232)&nbsp;</option><option  value='65'>Singapore (65)&nbsp;</option><option  value='421'>Slovakia (421)&nbsp;</option><option  value='386'>Slovenia (386)&nbsp;</option><option  value='677'>Solomon Islands (677)&nbsp;</option><option  value='252'>Somalia (252)&nbsp;</option><option  value='27'>South Africa (27)&nbsp;</option><option  value='34'>Spain (34)&nbsp;</option><option  value='94'>Sri Lanka (94)&nbsp;</option><option  value='249'>Sudan (249)&nbsp;</option><option  value='597'>Suriname (597)&nbsp;</option><option  value='268'>Swaziland (268)&nbsp;</option><option  value='46'>Sweden (46)&nbsp;</option><option  value='41'>Switzerland (41)&nbsp;</option><option  value='963'>Syria (963)&nbsp;</option><option  value='886'>Taiwan (886)&nbsp;</option><option  value='7'>Tajikistan (7)&nbsp;</option><option  value='255'>Tanzania (255)&nbsp;</option><option  value='66'>Thailand (66)&nbsp;</option><option  value='228'>Togo (228)&nbsp;</option><option  value='676'>Tonga Islands (676)&nbsp;</option><option  value='216'>Tunisia (216)&nbsp;</option><option  value='90'>Turkey (90)&nbsp;</option><option  value='993'>Turkmenistan (993)&nbsp;</option><option  value='688'>Tuvalu (688)&nbsp;</option><option  value='256'>Uganda (256)&nbsp;</option><option  value='380'>Ukraine (380)&nbsp;</option><option  value='44'>UK (44)&nbsp;</option><option  value='1'>USA / Canada (1)&nbsp;</option><option  value='598'>Uruguay (598)&nbsp;</option><option  value='998'>Uzbekistan (998)&nbsp;</option><option  value='678'>Vanuatu (678)&nbsp;</option><option  value='39'>Vatican City (39)&nbsp;</option><option  value='58'>Venezuela (58)&nbsp;</option><option  value='84'>Vietnam (84)&nbsp;</option><option  value='681'>Wallis (681)&nbsp;</option><option  value='685'>Western Samoa (685)&nbsp;</option><option  value='967'>Yemen (967)&nbsp;</option><option  value='381'>Serbia (381)&nbsp;</option><option  value='260'>Zambia (260)&nbsp;</option><option  value='263'>Zimbabwe (263)&nbsp;</option></select> ";
 }
 
 function planyo_get_country_codes() {
@@ -291,7 +318,7 @@ function planyo_prefill_params(params) {
 	jQuery('#' + name).val(value);
       if (value && jQuery('#box_' + name).length > 0)
 	jQuery('#box_' + name).val(value);
-      if (value && name.indexOf('box_') == 0)
+      if (value && name.indexOf('box_') == 0 && jQuery('#' + name.substr(4)).length > 0)
         jQuery('#' + name.substr(4)).val(value);
 
     }
@@ -302,13 +329,13 @@ function planyo_is_presentation_mode() {
   var presentation_mode = planyo_get_param('presentation_mode');
   if (presentation_mode)
     return (presentation_mode != '0');
-  if (planyo_get_param('submitted') || planyo_get_param('prefill') || planyo_get_param('mode'))
+  if (planyo_get_param('submitted') || planyo_get_param('prefill') || (planyo_get_param('mode') && planyo_get_param('mode') != 'resources'))
     return false;
   return (planyo_settings.presentation_mode == 1);
 }
 
 function get_planyo_mode() {
-  if (planyo_settings.empty_mode == '1')
+  if (planyo_isset (window.force_empty_mode) && window.force_empty_mode)
     return 'empty';
   var presentation_mode = planyo_is_presentation_mode();
   if (planyo_get_param('resource_id') || (planyo_isset(window.planyo_resource_id) && window.planyo_resource_id > 0)) {
@@ -318,10 +345,17 @@ function get_planyo_mode() {
       return 'reserve';
   }
   else {
-    if (presentation_mode)
-      return 'resource_list';
-    else
+    if (presentation_mode) {
+      if (planyo_settings.planyo_site_id.indexOf('M') == 0 && !planyo_get_param('site_id') && planyo_get_param('mode') != 'resources')
+        return 'site_list';
+      else
+        return 'resource_list';
+    }
+    else {
+      if (planyo_settings.empty_mode == '1' && !planyo_get_param('submitted'))
+        return 'empty';
       return 'search';
+    }
   }
 
 }
@@ -330,12 +364,15 @@ function planyo_get_additional_props(form, els) {
   jQuery(":input[name^='prop_res_']").each(function() {
     els[els.length] = this.name;
   });
+  jQuery(":input[name^='rental_prop_']").each(function() {
+    els[els.length] = this.name;
+  });
   return els;
 }
 
 function planyo_form_loaded(code) {
   if (!code || code.substr (0, 5) == "Error") {
-    window.location = "http://www.planyo.com/reserve.php?calendar=" + planyo_settings.planyo_site_id;
+    window.location = (planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/reserve.php?calendar=" + planyo_settings.planyo_site_id;
   }
   else {
     code = code.replace("{PH-mobile_country_param}", planyo_get_phone_codes("mobile_country_param"));
@@ -344,10 +381,12 @@ function planyo_form_loaded(code) {
     code = code.replace(/planyo-styles.css/g, get_full_planyo_file_path("planyo-styles.css"));
     jQuery('#planyo_content').html(code);
 
-    var planyo_mode = get_planyo_mode();
+    var planyo_mode = planyo_get_param('mode');
+    if (!planyo_is_special_mode(planyo_mode))
+      planyo_mode = get_planyo_mode();
     if (planyo_mode == 'search') {
       jQuery('#search_form').submit(planyo_send_search_form);
-      var params_array = new Array('start_date', 'end_date', 'one_date', 'start_time', 'end_time', 'sort', 'box_start_date', 'box_end_date', 'box_one_date', 'box_start_time', 'box_end_time');
+      var params_array = new Array('start_date', 'end_date', 'one_date', 'start_time', 'end_time', 'sort', 'box_start_date', 'box_end_date', 'box_one_date', 'box_start_time', 'box_end_time', 'rental_time_value');
       planyo_get_additional_props(jQuery('#search_form'), params_array);
       planyo_prefill_params(params_array);
       if (planyo_get_param('submitted')) {
@@ -360,11 +399,18 @@ function planyo_form_loaded(code) {
       setTimeout("if(window.planyo_dates_changed) planyo_dates_changed();", 5000);
       jQuery('#reserve_form').submit(planyo_send_reservation_form);
       jQuery('#product_form').submit(planyo_send_product_form);
-      planyo_prefill_params(new Array('start_date', 'end_date', 'one_date', 'start_time', 'end_time', 'box_start_date', 'box_end_date', 'box_one_date', 'box_start_time', 'box_end_time'));
+      var params_array = new Array('start_date', 'end_date', 'one_date', 'start_time', 'end_time', 'box_start_date', 'box_end_date', 'box_one_date', 'box_start_time', 'box_end_time', 'rental_time_value');
+      planyo_get_additional_props(jQuery('#reserve_form'), params_array);
+      planyo_prefill_params(params_array);
       if(jQuery('#planyo_price_holder').length) {
         jQuery('#planyo_price_holder').append(jQuery('#price_info'));
-	jQuery('#price_info_div').css('display','none')
+        jQuery('#planyo_price_holder').css('display','')
+        jQuery('#price_info_div').css('display','none')
       }
+    }
+    else if (planyo_mode == 'checkout') {
+      if (planyo_isset(window.js_submit_payment_form))
+        window.js_submit_payment_form();
     }
     if (planyo_isset(window.on_planyo_form_loaded))
       window.on_planyo_form_loaded(planyo_mode);
@@ -375,16 +421,20 @@ function planyo_embed_code(form_url, form_url_params) {
   if (planyo_settings.planyo_language)
     form_url_params += "&language=" + planyo_settings.planyo_language.toUpperCase();
   form_url_params += "&html_content_type=1";
-  form_url_params += "&user_agent=" + navigator.userAgent;
   form_url_params += "&plugin_mode=10";
+  var shopping_cart_id = planyo_get_cookie('planyo_cart_id');
+  if (shopping_cart_id && form_url_params.indexOf('cart_id=') == -1)
+    form_url_params += "&cart_id=" + shopping_cart_id + "&first_reservation_id=" + planyo_get_cookie('planyo_first_reservation_id');
+  form_url_params += "&user_agent=" + navigator.userAgent;
   document.planyo_file_path = get_full_planyo_file_path('');
-  jQuery.post(form_url,planyo_unserialize(form_url_params),planyo_form_loaded);
+  var form_url_params_arr = planyo_unserialize(form_url_params);
+  jQuery.post(form_url,form_url_params_arr,planyo_form_loaded);
 }
 
 function planyo_embed_cancel_code(site_id, reservation_id, c, user_id, resource_id) {
   if (reservation_id) {
     var form_url = planyo_settings.ulap_script;
-    var form_url_params = "ulap_url=http://www.planyo.com/rest/planyo-reservations.php&mode=display_cancel_code&reservation_id="+reservation_id+"&c="+c+"&resource_id="+resource_id+"&user_id="+user_id+"&feedback_url="+planyo_get_current_url()+"&site_id="+site_id;
+    var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_cancel_code&reservation_id="+reservation_id+"&c="+c+"&resource_id="+resource_id+"&user_id="+user_id+"&feedback_url="+planyo_get_current_url()+"&site_id="+site_id;
     planyo_embed_code(form_url,form_url_params);
   }
 }
@@ -392,7 +442,15 @@ function planyo_embed_cancel_code(site_id, reservation_id, c, user_id, resource_
 function planyo_embed_reservation_details(site_id, reservation_id, user_id) {
   if (reservation_id) {
     var form_url = planyo_settings.ulap_script;
-    var form_url_params = "ulap_url=http://www.planyo.com/rest/planyo-reservations.php&mode=display_reservation_details_code&reservation_id="+reservation_id+"&user_id="+user_id+"&feedback_url="+planyo_get_current_url()+"&site_id="+site_id;
+    var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_reservation_details_code&reservation_id="+reservation_id+"&user_id="+user_id+"&feedback_url="+planyo_get_current_url()+"&site_id="+site_id;
+    planyo_embed_code(form_url,form_url_params);
+  }
+}
+
+function planyo_embed_reservation_list(site_id, reservation_id, user_id) {
+  if (reservation_id) {
+    var form_url = planyo_settings.ulap_script;
+    var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_reservation_list_code&reservation_id="+reservation_id+"&user_id="+user_id+"&feedback_url="+planyo_get_current_url()+"&site_id="+site_id;
     planyo_embed_code(form_url,form_url_params);
   }
 }
@@ -400,9 +458,32 @@ function planyo_embed_reservation_details(site_id, reservation_id, user_id) {
 function planyo_embed_payment_form(site_id, reservation_id, user_id, auto_redirect) {
   if (reservation_id) {
     var form_url = planyo_settings.ulap_script;
-    var form_url_params = "ulap_url=http://www.planyo.com/rest/planyo-reservations.php&mode=display_payment_form_code&reservation_id="+reservation_id+"&user_id="+user_id+"&feedback_url="+planyo_get_current_url()+"&site_id="+site_id+(auto_redirect ? "&auto_redirect="+auto_redirect : "");
+    var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_payment_form_code&reservation_id="+reservation_id+"&user_id="+user_id+"&feedback_url="+planyo_get_current_url()+"&site_id="+site_id+(auto_redirect ? "&auto_redirect="+auto_redirect : "");
+    var amount = planyo_get_param('amount');
+    if (amount)
+      form_url_params += "&amount="+amount;
     planyo_embed_code(form_url,form_url_params);
   }
+}
+
+function planyo_embed_cart_code(site_id, cart_id, first_reservation_id, remove_reservation_id) {
+  if (!cart_id) {
+    cart_id = planyo_get_cookie('planyo_cart_id');
+    first_reservation_id = planyo_get_cookie('planyo_first_reservation_id');
+  }
+  var form_url = planyo_settings.ulap_script;
+  var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_cart_code&first_reservation_id="+first_reservation_id+"&remove_reservation_id="+(remove_reservation_id ? remove_reservation_id : "")+"&cart_id="+cart_id+"&feedback_url="+planyo_get_current_url()+"&site_id="+site_id;
+  planyo_embed_code(form_url,form_url_params);
+}
+
+function planyo_embed_checkout_code(site_id, cart_id, first_reservation_id) {
+  if (!cart_id) {
+    cart_id = planyo_get_cookie('planyo_cart_id');
+    first_reservation_id = planyo_get_cookie('planyo_first_reservation_id');
+  }
+  var form_url = planyo_settings.ulap_script;
+  var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_checkout_code&first_reservation_id="+first_reservation_id+"&cart_id="+cart_id+"&feedback_url="+planyo_get_current_url()+"&site_id="+site_id;
+  planyo_embed_code(form_url,form_url_params);
 }
 
 function planyo_embed_reservation_form(site_id, resource_id) {
@@ -418,31 +499,48 @@ function planyo_embed_reservation_form(site_id, resource_id) {
     date_str = "&start_date=" + planyo_get_param('start_date');
   else if (planyo_get_param('one_date'))
     date_str = "&one_date=" + planyo_get_param('one_date');
-  var form_url_params = "ulap_url=http://www.planyo.com/rest/planyo-reservations.php&mode=display_reservation_form_code&site_id=" + site_id + "&resource_id=" + resource_id + "&feedback_url=" + planyo_get_current_url() + date_str;
+  var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_reservation_form_code&site_id=" + site_id + "&resource_id=" + resource_id + "&feedback_url=" + planyo_get_current_url() + date_str;
   planyo_embed_code(form_url,form_url_params);
 }
 
 function planyo_embed_additional_products_form(reservation_id) {
   if (reservation_id) {
     var form_url = planyo_settings.ulap_script;
-    var form_url_params = "ulap_url=http://www.planyo.com/rest/planyo-reservations.php&mode=display_additional_products_code&reservation_id=" + reservation_id + "&feedback_url=" + planyo_get_current_url();
+    var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_additional_products_code&reservation_id=" + reservation_id + "&feedback_url=" + planyo_get_current_url();
     planyo_embed_code(form_url,form_url_params);
   }
 }
 
 function planyo_embed_search_form(site_id) {
   var form_url = planyo_settings.ulap_script;
-  var form_url_params = "ulap_url=http://www.planyo.com/rest/planyo-reservations.php&mode=display_search_form_code&feedback_url=" + planyo_get_current_url() + "&extra_search_fields=" + planyo_settings.extra_search_fields + "&site_id=" + site_id;
+  var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_search_form_code&feedback_url=" + planyo_get_current_url() + "&extra_search_fields=" + (planyo_get_param('extra_search_fields') ? planyo_get_param('extra_search_fields') : planyo_settings.extra_search_fields) + "&site_id=" + site_id;
   if (planyo_isset(planyo_settings.sort_fields))
     form_url_params += "&sort_fields=" + planyo_settings.sort_fields;
+  var range_search = planyo_get_param('range_search');
+  if (!range_search)
+    range_search = document.range_search;
+  if (range_search)
+    form_url_params += "&range_search="+range_search;
   planyo_embed_code(form_url, form_url_params);
 }
 
 function planyo_embed_resource_list(site_id) {
   var form_url = planyo_settings.ulap_script;
-  var form_url_params = "ulap_url=http://www.planyo.com/rest/planyo-reservations.php&mode=display_resource_list_code&feedback_url=" + planyo_get_current_url() + "&site_id=" + site_id;
+  var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_resource_list_code&feedback_url=" + planyo_get_current_url() + "&site_id=" + site_id;
+  if (planyo_settings.planyo_site_id.indexOf('M')==0)
+    form_url_params += "&metasite_id="+planyo_settings.planyo_site_id.substr(1);
   if (planyo_get_param('res_filter_name'))
     form_url_params += '&' + planyo_get_param('res_filter_name') + '=' + planyo_get_param('res_filter_value');
+  if (planyo_get_param('cal_filter_name'))
+    form_url_params += '&' + planyo_get_param('cal_filter_name') + '=' + planyo_get_param('cal_filter_value');
+  if (planyo_get_param('sort'))
+    form_url_params += '&sort=' + planyo_get_param('sort');
+  planyo_embed_code(form_url, form_url_params);
+}
+
+function planyo_embed_site_list(metasite_id) {
+  var form_url = planyo_settings.ulap_script;
+  var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_site_list_code&feedback_url=" + planyo_get_current_url() + "&metasite_id=" + metasite_id;
   planyo_embed_code(form_url, form_url_params);
 }
 
@@ -454,11 +552,15 @@ function planyo_embed_resource_desc(resource_id, site_id) {
       resource_id = '';
   }
   var form_url = planyo_settings.ulap_script;
-  var form_url_params = "ulap_url=http://www.planyo.com/rest/planyo-reservations.php&mode=display_single_resource_code&feedback_url=" + planyo_get_current_url() + "&resource_id=" + resource_id +"&site_id="+site_id;
+  var form_url_params = "ulap_url="+(planyo_settings.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php&mode=display_single_resource_code&feedback_url=" + planyo_get_current_url() + "&resource_id=" + resource_id +"&site_id="+site_id;
   planyo_embed_code(form_url, form_url_params);
 }
 
 function init_planyo() {
+  if (window.Drupal && !planyo_isset(window.planyo_dont_use_drupal_plugin))
+    planyo_settings = Drupal.settings.planyo;
+  if(jQuery('#planyo_price_holder').length)
+    jQuery('#planyo_price_holder').css('display','none')
   if (!window.Drupal || planyo_isset(window.planyo_dont_use_drupal_plugin)) {
     planyo_settings.ulap_script = get_full_planyo_file_path(planyo_settings.ulap_script);
   }
@@ -473,7 +575,9 @@ function init_planyo() {
     else if (planyo_mode == 'reserve')
       planyo_embed_reservation_form(planyo_settings.planyo_site_id, planyo_get_param('resource_id'));
     else if (planyo_mode == 'resource_list')
-      planyo_embed_resource_list(planyo_settings.planyo_site_id);
+      planyo_embed_resource_list((planyo_get_param('site_id') && planyo_settings.planyo_site_id.indexOf('M')==0) ? planyo_get_param('site_id') : planyo_settings.planyo_site_id);
+    else if (planyo_mode == 'site_list' && planyo_settings.planyo_site_id.indexOf('M')==0)
+      planyo_embed_site_list(planyo_settings.planyo_site_id.substr(1));
     else if (planyo_mode == 'resource_desc')
       planyo_embed_resource_desc(planyo_get_param('resource_id'), planyo_settings.planyo_site_id);
     else if (planyo_mode == 'empty')

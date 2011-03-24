@@ -83,6 +83,10 @@
     width:8em;
 }
 
+.page-planyo #planyo_content ul {
+    margin-top:23px;
+}
+
 #planyo_content ul.summary, #planyo_plugin_code ul.summary, #box_search_form ul.summary {
     line-height:1.5;
 }
@@ -99,7 +103,7 @@
     clear:both;
 }
 
-#planyo_content .button, #planyo_plugin_code .button {
+#planyo_content .button, #planyo_plugin_code .button, #planyo_content .checkout_button {
     display:block;
     margin: 0 0 1em;
     padding: 0 .5em;
@@ -110,6 +114,15 @@
     border: none;
     white-space: nowrap;
     cursor: pointer;
+    border-radius:3px;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+}
+
+#planyo_content .checkout_button {
+    margin:5px 0 25px;
+    width:160px;
+    text-align:center;
 }
 
 #planyo_content li img, #planyo_plugin_code li img, #box_search_form li img {
@@ -120,6 +133,7 @@
 #planyo_content .left, #planyo_plugin_code .left {
     display: block;
     clear: left;
+    float: none;
 }
 
 #planyo_content .right, #planyo_plugin_code .right {
@@ -239,7 +253,7 @@
     display:none;
     color:red;
     font: bold 12px Tahoma, Verdana, Arial, sans-serif;
-    margin-bottom:15px;
+    margin-top:15px;
 }
 
 #res_ok_msg {
@@ -329,45 +343,75 @@
     margin-right:25px;
 }
 
+#full_img_div #img_info .close {
+    float: right;
+}
+
 #bg_hider .buttons .prev,
 #bg_hider .buttons .next,
 #bg_hider .buttons .play,
 #bg_hider .buttons .pause,
-#bg_hider .buttons .close {
+#bg_hider .buttons .close,
+#full_img_div #img_info .close {
     display: block;
     width: 28px;
     height: 28px;
 }
 
+#full_img_div #on_img_prev,
+#full_img_div #on_img_next {
+	display: block;
+	width: 30px;
+	height: 60px;
+}
+
 #bg_hider .buttons .prev {
-    background: url(http://www.planyo.com/slideshow/btn-prev.png);
+    background: url(https://www.planyo.com/slideshow/btn-prev.png);
 }
 #bg_hider .buttons .prev:hover {
-    background: url(http://www.planyo.com/slideshow/btn-prev-hvr.png);
+    background: url(https://www.planyo.com/slideshow/btn-prev-hvr.png);
 }
 #bg_hider .buttons .next {
-    background: url(http://www.planyo.com/slideshow/btn-next.png); 
+    background: url(https://www.planyo.com/slideshow/btn-next.png); 
 }
 #bg_hider .buttons .next:hover {
-    background: url(http://www.planyo.com/slideshow/btn-next-hvr.png);
+    background: url(https://www.planyo.com/slideshow/btn-next-hvr.png);
 }
 #bg_hider .buttons .play {
-    margin-left: 4px; background: url(http://www.planyo.com/slideshow/btn-play.png);
+    margin-left: 4px; background: url(https://www.planyo.com/slideshow/btn-play.png);
 }
 #bg_hider .buttons .play:hover {
-    background: url(http://www.planyo.com/slideshow/btn-play-hvr.png);
+    background: url(https://www.planyo.com/slideshow/btn-play-hvr.png);
 }
 #bg_hider .buttons .pause {
-    margin-left: 4px; background: url(http://www.planyo.com/slideshow/btn-pause.png); 
+    margin-left: 4px; background: url(https://www.planyo.com/slideshow/btn-pause.png); 
 }
 #bg_hider .buttons .pause:hover {
-    background: url(http://www.planyo.com/slideshow/btn-pause-hvr.png);
+    background: url(https://www.planyo.com/slideshow/btn-pause-hvr.png);
 }
 #bg_hider .buttons .close {
-    background: url(http://www.planyo.com/slideshow/btn-close.png);
+    background: url(https://www.planyo.com/slideshow/btn-close.png);
 }
 #bg_hider .buttons .close:hover {
-    background: url(http://www.planyo.com/slideshow/btn-close-hvr.png);
+    background: url(https://www.planyo.com/slideshow/btn-close-hvr.png);
+}
+#full_img_div #img_info .close {
+  background: url(https://www.planyo.com/slideshow/btn-on-close.png); 
+}
+#full_img_div #img_info .close:hover {
+  background: url(https://www.planyo.com/slideshow/btn-on-close-hvr.png); 
+}
+#full_img_div #on_img_prev {
+  background: url(https://www.planyo.com/slideshow/btn-on-img-prev.png); 
+}
+#full_img_div #on_img_prev:hover {
+  background: url(https://www.planyo.com/slideshow/btn-on-img-prev-hvr.png); 
+}
+#full_img_div #on_img_next {
+  background: url(https://www.planyo.com/slideshow/btn-on-img-next.png); 
+}
+#full_img_div #on_img_next:hover {
+  background: url(https://www.planyo.com/slideshow/btn-on-img-next-hvr.png);
 }
 
 #planyo_content .images, #planyo_plugin_code .images {
@@ -381,6 +425,20 @@
     padding:3px;
     background-color:black;
     margin:2px;
+}
+
+#planyo_content .images_left, #planyo_plugin_code .images_left {
+    display: inline;
+    margin-left:10px;
+    width:380px;
+}
+
+#planyo_content .images_left img, #planyo_plugin_code .images_left img {
+    padding:3px;
+    background-color:black;
+    margin:2px;
+    width: 80px;
+    height: 80px;
 }
 
 #planyo_content .images_simple, #planyo_plugin_code .images_simple {
@@ -422,3 +480,26 @@
     width:24px;
     background:transparent url(hourglass.gif) no-repeat scroll 0 0;
 }
+
+.result_ranges {
+    clear:both;
+    display:block;
+}
+
+.result_range {
+    float:left;
+    font-size:10px;
+    color:#666666;
+    margin-left:6px;
+    padding:2px 4px 2px 4px;
+    margin:0 3px 3px 3px;
+    background-color:#f0f0f0;
+    border-radius:3px;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+}
+
+.shopping_total {
+    font-size:13px;
+}
+

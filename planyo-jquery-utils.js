@@ -268,9 +268,24 @@ function planyo_close_calendar() {
   }
 }
 
+function convert_entities_to_utf8 (str) {
+  var i = str.indexOf ("&#");
+  while (i != -1) {
+    var iSC = str.indexOf (";", i);
+    if (iSC != -1 && (iSC - i - 2) > 0 && (iSC - i - 2) <= 5) {
+      var decimal = str.substr (i + 2, iSC - i - 2);
+      if (!isNaN (decimal) && decimal == parseInt (decimal)) {
+        str = str.substr (0, i) + String.fromCharCode (decimal) + ((str.length > iSC + 1) ? str.substr (iSC + 1) : '');
+      }
+    }
+    i = str.indexOf ("&#", i + 1);
+  }  
+  return str;
+}
+
 function planyo_calendar_date_chosen(day, month, year) {
   var picker = jQuery('#' + document.current_picker);
-  picker.val(planyo_output_date(year, month, day));
+  picker.val(convert_entities_to_utf8 (planyo_output_date(year, month, day)));
   if (document.current_picker_onchange)
     eval(document.current_picker_onchange);
   document.previous_month_picked = month;
@@ -341,4 +356,21 @@ function get_full_planyo_file_path(name) {
     return loc + name;
   else
     return loc + '/' + name;
+}
+
+function show_product_images (parent_, id) {
+  var box = jQuery('#product_box_' + id);
+  var parent = jQuery (parent_);
+  if (box && parent) {    
+    box.css('top', parent.offset().top + 'px');
+    box.css('left', (parent.offset().left + 30) + 'px');
+    box.css('display', '');
+  }  
+}
+
+function hide_product_images (id) {
+  var box = jQuery ('#product_box_' + id);
+  if (box) {
+    box.css('display', 'none');
+  }
 }

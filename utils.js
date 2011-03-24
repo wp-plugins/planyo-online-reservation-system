@@ -95,7 +95,7 @@ function planyo_get_month_name (n, is_short) {
 
 function planyo_output_hour_only(hour, european_style_postfix) {
   if (document.time_format && document.time_format.indexOf('a') != -1)
-    return ((hour % 12) == 0 ? 12 : hour % 12) +' '+ (hour < 12 ? 'am' : 'pm');
+    return ((hour % 12) == 0 ? 12 : hour % 12) +' '+ ((hour < 12 || hour == 24) ? 'am' : 'pm');
   return hour+(european_style_postfix ? european_style_postfix : '');
 }
 
@@ -104,7 +104,7 @@ function planyo_output_time(hour, minute) {
   if (!time_str) time_str = "H:i";
   time_str = time_str.replace("H", hour);
   time_str = time_str.replace("h", (hour % 12) == 0 ? 12 : hour % 12);
-  time_str = time_str.replace("a", hour < 12 ? 'am' : 'pm');
+  time_str = time_str.replace("a", (hour < 12 || hour == 24) ? 'am' : 'pm');
   time_str = time_str.replace("i", minute<10 ? '0'+minute : minute);
   return time_str;
 }
@@ -122,12 +122,22 @@ function planyo_output_date(year, month, day) {
 function planyo_parse_date (date_str, format) {
   //works with the following formats: Y/m/d, Y-m-d, d.m.Y, d M Y(EN), M d, Y(EN), m/d/Y
   var parsed = Date.parse(date_str);
-  if ((!parsed || parsed == 'undefined') && format) {
+  if ((!parsed || parsed == 'undefined' || format =="d/m/Y") && format) {
     switch (format) {
       case "d.m.Y":
         var parts = date_str.split('.');
         if (parts.length >= 2)
-          parsed = Date.parse(parts[2]+'-'+parts[1]+'-'+parts[0]);
+          parsed = Date.parse(parts[2]+'/'+parts[1]+'/'+parts[0]);
+        break;
+      case "Y-m-d":
+        var parts = date_str.split('-');
+        if (parts.length >= 2)
+          parsed = Date.parse(parts[0]+'/'+parts[1]+'/'+parts[2]);
+        break;
+      case "d/m/Y":
+        var parts = date_str.split('/');
+        if (parts.length >= 2)
+          parsed = Date.parse(parts[2]+'/'+parts[1]+'/'+parts[0]);
         break;
     }
   }
@@ -331,12 +341,27 @@ function planyo_close_calendar () {
   }
 }
 
+function convert_entities_to_utf8 (str) {
+  var i = str.indexOf ("&#");
+  while (i != -1) {
+    var iSC = str.indexOf (";", i);
+    if (iSC != -1 && (iSC - i - 2) > 0 && (iSC - i - 2) <= 5) {
+      var decimal = str.substr (i + 2, iSC - i - 2);
+      if (!isNaN (decimal) && decimal == parseInt (decimal)) {
+        str = str.substr (0, i) + String.fromCharCode (decimal) + ((str.length > iSC + 1) ? str.substr (iSC + 1) : '');
+      }
+    }
+    i = str.indexOf ("&#", i + 1);
+  }  
+  return str;
+}
+
 function planyo_calendar_date_chosen (day, month, year) {
   var picker = document.getElementById(document.current_picker);
   if (picker.exclude_year)
-    picker.value = day+' '+planyo_get_month_name (month, false);
+    picker.value = convert_entities_to_utf8 (day+' '+planyo_get_month_name (month, false));
   else
-    picker.value = planyo_output_date(year, month, day);
+    picker.value = convert_entities_to_utf8 (planyo_output_date(year, month, day));
   if (document.current_picker_onchange)
     eval(document.current_picker_onchange);
   document.previous_month_picked = month;
@@ -405,3 +430,33 @@ function js_close_calendar () {
 function js_show_calendar (cal,onchange) {
   return planyo_show_calendar (cal,onchange);
 }
+
+function show_product_images (parent, id) {
+  var box = document.getElementById ('product_box_' + id);
+  if (box && parent) {
+    var coords = parent.getCoordinates ? parent.getCoordinates () : planyo_get_item_coordinates (parent);    
+    box.style.top = coords.top + 'px';
+    box.style.left = (coords.left + 30) + 'px';
+    box.style.display = '';    
+  }  
+}
+
+function hide_product_images (id) {
+  var box = document.getElementById ('product_box_' + id);
+  if (box) {
+    box.style.display = 'none';
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

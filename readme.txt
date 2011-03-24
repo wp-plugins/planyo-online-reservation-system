@@ -4,7 +4,7 @@ Contributors: xtreeme
 Donate link: No Thanks
 Tags: online, reservation, booking, system, reserve, book, software
 Requires at least: 2.5
-Tested up to: 2.9.1
+Tested up to: 3.1
 Stable tag: trunk
 
 This plugin embeds the Planyo online reservation system. 
@@ -36,9 +36,8 @@ You'll find the complete FAQ at <a href='http://www.planyo.com/faq.php'>http://w
 You'll find the tutorial at <a
 href='http://www.planyo.com/wordpress-reservation-system/'>http://www.planyo.com/wordpress-reservation-system/</a>.
 
-In short: use the following tag wherever you want the planyo form to appear:
-&lt;?php include ABSPATH . 'wp-content/plugins/planyo/embed.php'; ?&gt;
-Make sure this directory exists -- if the planyo plugin is installed in a different location, you'll need to modify the path accordingly!
+In short: use the [planyo] shortcode wherever you want the planyo
+reservation system to appear:
 
 == Screenshots ==
 
@@ -67,3 +66,9 @@ Make sure this directory exists -- if the planyo plugin is installed in a differ
 * No more difficult set-up. You now embed planyo by using the [planyo] shortcode in any article
 * Planyo now works with both jQuery and mootools libraries so you can choose the one that you already use on your site
 * Special mobile WebApp version for mobile devices, such as iPhone or Android
+
+= 1.6 =
+* Added language and resource_id parameters to the shortcode
+
+= 1.7 =
+* Compatibility with the shopping cart feature

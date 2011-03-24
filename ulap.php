@@ -29,7 +29,7 @@ function send_http_post($url, &$fields) {
       $urlencoded .= '&';
     }
   }
-  $urlencoded .= 'modver=1.5';
+  $urlencoded .= 'modver=1.6';
 
   $context_options = array(
 			   'http'=>array(
