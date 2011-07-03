@@ -98,6 +98,10 @@
     text-indent:0;
 }
 
+#planyo_content ul li, #planyo_plugin_code ul li, #box_search_form ul li {
+    list-style: none;
+}
+
 #planyo_content form li, #planyo_plugin_code form li, #resources li, #box_search_form ul {
     margin: 0 0 .5em 0;
     clear:both;

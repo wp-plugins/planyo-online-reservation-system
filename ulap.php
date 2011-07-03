@@ -12,6 +12,35 @@ if (!isset($header_written)) {
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// get_client_ip
+//
+// returns user's IP address
+
+function get_client_ip () {
+  $ip = null;	
+  if (!empty($_SERVER ['HTTP_CLIENT_IP'])) {
+    $ip = $_SERVER ['HTTP_CLIENT_IP'];
+  }
+  elseif (!empty($_SERVER ['HTTP_X_FORWARDED_FOR'])) {
+    $ip = $_SERVER ['HTTP_X_FORWARDED_FOR'];
+  }
+  elseif (!empty($_SERVER ['HTTP_X_FORWARDED'])) {
+    $ip = $_SERVER ['HTTP_X_FORWARDED'];
+  }
+  elseif (!empty($_SERVER ['HTTP_FORWARDED_FOR'])) {
+    $ip = $_SERVER ['HTTP_FORWARDED_FOR'];
+  }
+  elseif (!empty($_SERVER ['HTTP_FORWARDED'])) {
+    $ip = $_SERVER ['HTTP_FORWARDED'];
+  }
+  else {
+    $ip = $_SERVER['REMOTE_ADDR'];
+  }
+  return $ip;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // send_http_post
 //
 // posts data to given URL
@@ -22,21 +51,24 @@ function send_http_post($url, &$fields) {
   if ($host != "www.planyo.com")
     return "Error: Call to $url not allowed";
 
-  $urlencoded = '';
+  $params = '';
   if ($fields && count($fields) > 0) {
     foreach (array_keys($fields) as $key) {
-      $urlencoded = $urlencoded . "$key=" . rawurlencode($fields[$key]);
-      $urlencoded .= '&';
+      $params = $params . "$key=" . rawurlencode($fields[$key]);
+      $params .= '&';
     }
   }
-  $urlencoded .= 'modver=1.6';
+  $params .= 'modver=1.7';
+  $ip = get_client_ip();
+  if ($ip)
+    $params .= "&client_ip=$ip";
 
   $context_options = array(
 			   'http'=>array(
 					 'method'=>"POST",
-					 "Content-length: " . strlen($urlencoded) . "\r\n" .
+					 "Content-length: " . strlen($params) . "\r\n" .
 					 "Content-type:application/x-www-form-urlencoded\r\n",
-					 'content'=> $urlencoded)
+					 'content'=> $params)
 			   );
   $context_options['https'] = $context_options['http'];
   $context = @stream_context_create($context_options);
@@ -44,7 +76,7 @@ function send_http_post($url, &$fields) {
     $cs = @curl_init($url);
     if ($cs) {
       @curl_setopt ($cs, CURLOPT_POST, 1);
-      @curl_setopt ($cs, CURLOPT_POSTFIELDS, $urlencoded);
+      @curl_setopt ($cs, CURLOPT_POSTFIELDS, $params);
       @curl_setopt ($cs, CURLOPT_FOLLOWLOCATION, 1);
       @curl_setopt ($cs, CURLOPT_RETURNTRANSFER, 1); 
       $response = @curl_exec ($cs);

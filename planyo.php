@@ -3,7 +3,7 @@
 Plugin Name: Planyo online reservation system
 Plugin URI: http://www.planyo.com/wordpress-reservation-system
 Description: This plugin embeds the Planyo.com online reservation system. Before using it, you'll need to create an account at planyo.com. Please see <a href='http://www.planyo.com/wordpress-reservation-system'>http://www.planyo.com/wordpress-reservation-system</a> for more info.
-Version: 1.7
+Version: 1.6
 Author: Xtreeme GmbH
 Author URI: http://www.planyo.com/
 */
@@ -38,6 +38,8 @@ function register_planyo_settings() {
   register_setting('planyo-settings-group', 'planyo_language');
   register_setting('planyo-settings-group', 'default_mode');
   register_setting('planyo-settings-group', 'seo_friendly');
+  register_setting('planyo-settings-group', 'use_login');
+  register_setting('planyo-settings-group', 'resource_ordering');
   register_setting('planyo-settings-group', 'js_framework');
 }
 
@@ -63,23 +65,10 @@ function planyo_options() {
         </tr>
 
         <tr valign="top">
-        <th scope="row">Additional fields of the search box</th>
-        <td><input type="text" name="extra_search_fields" value="<?php echo get_option('extra_search_fields'); ?>" /><br/>
-        <span class='description'>Comma-separated extra fields of the search box. Can be left empty.</span>
-        </td>
-        </tr>
-
-        <tr valign="top">
-        <th scope="row">Sort-by field choices</th>
-        <td><input type="text" name="sort_fields" value="<?php echo get_option('sort_fields') ? get_option('sort_fields') : 'name,price'; ?>" /><br/>
-        <span class='description'>Comma-separated possible sort fields. A single value will hide this parameter, more than one value will give the user a choice in form of a drop-down box. Can be left empty.</span>
-        </td>
-        </tr>
-         
-        <tr valign="top">
         <th scope="row">Default language of Planyo interface</th>
         <td><select name='planyo_language'>
-		    <?php planyo_output_select_option('EN', 'English', 'planyo_language', true);?>
+		    <?php planyo_output_select_option('0', 'Auto-detect', 'planyo_language', true);?>
+		    <?php planyo_output_select_option('EN', 'English', 'planyo_language');?>
 		    <?php planyo_output_select_option('FR', 'French', 'planyo_language');?>
 		    <?php planyo_output_select_option('IT', 'Italian', 'planyo_language');?>
 		    <?php planyo_output_select_option('ES', 'Spanish', 'planyo_language');?>
@@ -112,12 +101,43 @@ function planyo_options() {
         </tr>
 
         <tr valign="top">
+        <th scope="row">Additional fields of the search box (search mode)</th>
+        <td><input type="text" name="extra_search_fields" value="<?php echo get_option('extra_search_fields'); ?>" /><br/>
+        <span class='description'>Comma-separated extra fields of the search box. Can be left empty.</span>
+        </td>
+        </tr>
+
+        <tr valign="top">
+        <th scope="row">Sort-by field choices (search mode)</th>
+        <td><input type="text" name="sort_fields" value="<?php echo get_option('sort_fields') ? get_option('sort_fields') : 'name,price'; ?>" /><br/>
+        <span class='description'>Comma-separated possible sort fields. A single value will hide this parameter, more than one value will give the user a choice in form of a drop-down box. Allowed values: name, price, prop_res_xxx (custom resource properties). Can be left empty.</span>
+        </td>
+        </tr>
+         
+        <tr valign="top">
+        <th scope="row">Ordering of resources (resource list mode)</th>
+        <td><input type="text" name="resource_ordering" value="<?php echo get_option('resource_ordering') ? get_option('resource_ordering') : 'name'; ?>" /><br/>
+        <span class='description'>Sorting criterium for the listing of resources in the resource list view. This can be set to name (this is the default) which sorts by resource name, or one of prop_res_xxx (custom resource property defined in Planyo). Can be left empty.</span>
+        </td>
+        </tr>
+
+        <tr valign="top">
         <th scope="row">SEO friendly</th>
         <td><select name='seo_friendly'>
 		    <?php planyo_output_select_option('1', 'Yes', 'seo_friendly', true);?>
 		    <?php planyo_output_select_option('0', 'No', 'seo_friendly');?>
         </select><br/>
         <span class='description'>Choose whether the plugin in the resource list and resource details modes should be SEO friendly (information retrieved from the server when loading the page) or not (information retrieved using Javascript/AJAX). Choosing yes will add a slight delay to the loading time of the page but will let search engines index the resource names, descriptions and photos.</span>
+        </td>
+        </tr>
+
+        <tr valign="top">
+        <th scope="row">Integrate with wordpress login</th>
+        <td><select name='use_login'>
+		    <?php planyo_output_select_option('1', 'Yes', 'use_login', true);?>
+		    <?php planyo_output_select_option('0', 'No', 'use_login');?>
+        </select><br/>
+        <span class='description'>Choose whether the plugin should use the login information from this wordpress site. If used, the reservation form items will be automatically prefilled with known values and subsequent reservations will use previously entered data.</span>
         </td>
         </tr>
 
@@ -154,7 +174,7 @@ $planyo_directory = str_replace(basename(__FILE__),"",plugin_basename(__FILE__))
 require_once(WP_PLUGIN_DIR.'/'.$planyo_directory.'planyo-plugin-impl.php');
 
 function planyo_code($atts) {
-  global $planyo_always_use_ajax, $planyo_site_id, $planyo_default_mode, $planyo_files_location, $planyo_language, $planyo_sort_fields, $planyo_extra_search_fields, $planyo_resource_id, $planyo_directory, $planyo_js_library_used, $planyo_include_js_library;
+  global $planyo_always_use_ajax, $planyo_site_id, $planyo_default_mode, $planyo_files_location, $planyo_language, $planyo_sort_fields, $planyo_extra_search_fields, $planyo_resource_id, $planyo_directory, $planyo_js_library_used, $planyo_include_js_library, $planyo_login_info, $planyo_resource_ordering;
 
   ob_start();
 
@@ -163,12 +183,22 @@ function planyo_code($atts) {
   $planyo_files_location = WP_PLUGIN_URL.'/'.$planyo_directory; // relative or absolute directory where the planyo files are kept
   if ($_SERVER['HTTPS'] == 'on')
     $planyo_files_location = str_replace("http:","https:",$planyo_files_location);
-  if (isset($atts) && isset($atts['language']))
+  if (isset($atts) && isset($atts['language'])) {
     $planyo_language = $atts['language'];
-  else
+  }
+  else {
     $planyo_language = get_option('planyo_language');  // you can optionally change the language here, e.g. 'FR' or 'ES' or pass the languge in the 'lang' parameter
+    if (!$planyo_language) {
+      $locale = get_locale();
+      if ($locale)
+        $planyo_language = strtoupper(substr($locale, 0, 2));
+      if (!$planyo_language)
+        $planyo_language = 'EN';
+    }
+  }
   $planyo_always_use_ajax = get_option('seo_friendly')=='1' ? false : true;  // set to true to use AJAX to display resource list and resource details views
   $planyo_sort_fields = get_option('sort_fields');  // comma-separated sort fields -- a single field will hide the sort dropdown box
+  $planyo_resource_ordering = get_option('resource_ordering');
   $planyo_extra_search_fields = get_option('extra_search_fields');  // comma-separated extra fields in the search box
   if (isset($atts) && isset($atts['mode']))
     $planyo_default_mode = $atts['mode'];
@@ -180,6 +210,12 @@ function planyo_code($atts) {
     $planyo_resource_id = $atts['resource_id'];
   else
     $planyo_resource_id = null;  // optional: ID of the resource being reserved
+  if (get_option('use_login')=='1') {
+    $wp_login_info = wp_get_current_user();
+    if ($wp_login_info && $wp_login_info->ID) {
+      $planyo_login_info = array('first_name'=>$wp_login_info->user_firstname, 'last_name'=>$wp_login_info->user_lastname, 'email'=>$wp_login_info->user_email, 'login_cs'=>sprintf("%u",crc32($wp_login_info->ID.$wp_login_info->user_email.$wp_login_info->user_login)));
+    }
+  }
 
 ?>
 <div id='planyo_plugin_code'>

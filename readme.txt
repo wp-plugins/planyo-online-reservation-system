@@ -4,7 +4,7 @@ Contributors: xtreeme
 Donate link: No Thanks
 Tags: online, reservation, booking, system, reserve, book, software
 Requires at least: 2.5
-Tested up to: 3.1
+Tested up to: 2.9.1
 Stable tag: trunk
 
 This plugin embeds the Planyo online reservation system. 
@@ -13,7 +13,7 @@ This plugin embeds the Planyo online reservation system.
 
 Planyo is a commission-free flexible online reservation system for any kind of resources such as hotels, holiday apartments, yacht rentals, driving schools, tennis courts, doctor appointments, events etc.
 
-Planyo is available in 10 languages and helps you manage your clients' bookings by handling all email communication with the clients, allowing various booking confirmation mechanisms, handling payments (also online credit card payments), printing invoices etc.
+Planyo is available in 16 languages and helps you manage your clients' bookings by handling all email communication with the clients, allowing various booking confirmation mechanisms, handling payments (also online credit card payments), printing invoices etc.
 
 This module embeds the reservation system (availability search box and the reservation form) into your site so the visitors can go through the whole process (search and reservation) without ever leaving your website. Before using this module you should create an account at planyo.com. Please see <a href='http://www.planyo.com/wordpress-reservation-system'>http://www.planyo.com/wordpress-reservation-system</a> for more info. You can also see our home page at <a href='http://www.planyo.com/'>http://www.planyo.com</a> for admin backoffice or visitor demonstration, or for tutorial movies, pricing and more info.
 
@@ -70,5 +70,3 @@ reservation system to appear:
 = 1.6 =
 * Added language and resource_id parameters to the shortcode
 
-= 1.7 =
-* Compatibility with the shopping cart feature

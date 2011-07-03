@@ -28,7 +28,8 @@ function planyo_get_month_specs (month, year) {
     d.setFullYear(d.getFullYear (), d.getMonth (), 1);
   else
     d.setFullYear(year, month - 1, 1);
-  var first_offset = (d.getDay() + 6) % 7;
+  var first_weekday = planyo_isset(document.first_weekday) ? document.first_weekday : 1;
+  var first_offset = (7 - first_weekday + d.getDay()) % 7;
   var last_month_last_date = new Date(d);
   last_month_last_date.setDate(d.getDate()-1);
   var prev_month_count = last_month_last_date.getDate();
@@ -40,10 +41,11 @@ function planyo_get_month_specs (month, year) {
 }
 
 function planyo_get_day_name(n, is_short) {
+  var first_weekday = planyo_isset(document.first_weekday) ? document.first_weekday : 1;
   // day names are imported from planyo.com using the chosen language; only if no translations are found, the English versions are used
   var arr = planyo_isset(document.s_weekdays_short) ? (is_short ? document.s_weekdays_short : document.s_weekdays_med) :
     (is_short ? new Array("M", "T", "W", "T", "F", "S", "S") : new Array("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"));
-  return arr [n % 7];
+  return arr [(n + first_weekday + 6) % 7];
 }
 
 function planyo_get_month_name(n, is_short) {
@@ -89,7 +91,7 @@ function planyo_get_day_info_for_month(month, year) {
   var month_specs = planyo_get_month_specs(month, year);
   var day_iterator = month_specs [1] - month_specs [0] + 1;
   var days_in_month_left = month_specs [0] - 1;
-  var month_iterator = -1; // starting last month unless day_iterator is 1
+  var month_iterator = -1;
   if (days_in_month_left == -1) {
     month_iterator = 0;
     days_in_month_left = month_specs [2] - 1;

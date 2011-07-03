@@ -1,6 +1,7 @@
 <?php
 
-@header("Content-Type: text/html; charset=UTF-8");
+if (!isset($planyo_set_content_type))
+  @header("Content-Type: text/html; charset=UTF-8");  
 $header_written = true;
 
 require_once(dirname(__FILE__).'/ulap.php');
@@ -20,7 +21,7 @@ function planyo_get_contents($url, $params) {
 }
 
 function planyo_output_resource_list() {
-  global $planyo_site_id, $planyo_metasite_id, $planyo_feedback_url, $planyo_default_mode, $planyo_language, $planyo_files_location;
+  global $planyo_site_id, $planyo_metasite_id, $planyo_feedback_url, $planyo_default_mode, $planyo_language, $planyo_files_location, $planyo_resource_ordering, $planyo_login_info;
   $planyo_default_mode = 'empty';
   $language = $planyo_language;
   if (planyo_get_param('lang'))
@@ -37,10 +38,14 @@ function planyo_output_resource_list() {
     $site_id_used = '';
     $metasite_id_used = $planyo_metasite_id;
   }
-  $params = array('modver'=>'1.6','site_id'=>$site_id_used,'metasite_id'=>$metasite_id_used, 'mode'=>'display_resource_list_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'sort'=>planyo_get_param('sort'), 'res_filter_name'=>planyo_get_param('res_filter_name'), 'res_filter_value'=>planyo_get_param('res_filter_value'), 'planyo_files_location'=>$planyo_files_location);
+  $params = array('modver'=>'1.7','site_id'=>$site_id_used,'metasite_id'=>$metasite_id_used, 'mode'=>'display_resource_list_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'sort'=>planyo_get_param('sort') ? planyo_get_param('sort') : $planyo_resource_ordering, 'res_filter_name'=>planyo_get_param('res_filter_name'), 'res_filter_value'=>planyo_get_param('res_filter_value'), 'planyo_files_location'=>$planyo_files_location);
   if (planyo_get_param('res_filter_name') && planyo_get_param('res_filter_value')) {
     $params['res_filter_name'] = planyo_get_param('res_filter_name');
     $params['res_filter_value'] = planyo_get_param('res_filter_value');
+  }
+  if (is_array($planyo_login_info)) {
+    $params['login_cs'] = $planyo_login_info['login_cs'];
+    $params['login_email'] = $planyo_login_info['login_email'];
   }
   $params['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
   echo planyo_get_contents(((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? "https" : "http")."://www.planyo.com/rest/planyo-reservations.php", $params);
@@ -48,15 +53,19 @@ function planyo_output_resource_list() {
 }
 
 function planyo_output_site_list() {
-  global $planyo_metasite_id, $planyo_feedback_url, $planyo_default_mode, $planyo_language, $planyo_files_location;
+  global $planyo_metasite_id, $planyo_feedback_url, $planyo_default_mode, $planyo_language, $planyo_files_location, $planyo_login_info;
   $planyo_default_mode = 'empty';
   $language = $planyo_language;
   if (planyo_get_param('lang'))
     $language = planyo_get_param('lang');
-  $params = array('modver'=>'1.6','site_id'=>"",'metasite_id'=> $planyo_metasite_id, 'mode'=>'display_site_list_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'sort'=>planyo_get_param('sort'), 'cal_filter_name'=>planyo_get_param('cal_filter_name'), 'cal_filter_value'=>planyo_get_param('cal_filter_value'), 'planyo_files_location'=>$planyo_files_location);
+  $params = array('modver'=>'1.7','site_id'=>"",'metasite_id'=> $planyo_metasite_id, 'mode'=>'display_site_list_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'sort'=>planyo_get_param('sort'), 'cal_filter_name'=>planyo_get_param('cal_filter_name'), 'cal_filter_value'=>planyo_get_param('cal_filter_value'), 'planyo_files_location'=>$planyo_files_location);
   if (planyo_get_param('cal_filter_name') && planyo_get_param('cal_filter_value')) {
     $params['cal_filter_name'] = planyo_get_param('cal_filter_name');
     $params['cal_filter_value'] = planyo_get_param('cal_filter_value');
+  }
+  if (is_array($planyo_login_info)) {
+    $params['login_cs'] = $planyo_login_info['login_cs'];
+    $params['login_email'] = $planyo_login_info['login_email'];
   }
   $params['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
   echo planyo_get_contents(((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? "https" : "http")."://www.planyo.com/rest/planyo-reservations.php", $params);
@@ -69,7 +78,7 @@ function planyo_output_resource_details() {
   $language = $planyo_language;
   if (planyo_get_param('lang'))
     $language = planyo_get_param('lang');
-  echo planyo_get_contents((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on' ? "https" : "http")."://www.planyo.com/rest/planyo-reservations.php", array('modver'=>'1.6','site_id'=>($planyo_site_id && !$planyo_metasite_id ? $planyo_site_id : ""),'metasite_id'=>($planyo_metasite_id ? $planyo_metasite_id : ""), 'resource_id'=>($planyo_resource_id ? $planyo_resource_id : planyo_get_param('resource_id')), 'mode'=>'display_single_resource_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'user_agent'=>$_SERVER['HTTP_USER_AGENT'], 'planyo_files_location'=>$planyo_files_location));
+  echo planyo_get_contents((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on' ? "https" : "http")."://www.planyo.com/rest/planyo-reservations.php", array('modver'=>'1.7','site_id'=>($planyo_site_id && !$planyo_metasite_id ? $planyo_site_id : ""),'metasite_id'=>($planyo_metasite_id ? $planyo_metasite_id : ""), 'resource_id'=>($planyo_resource_id ? $planyo_resource_id : planyo_get_param('resource_id')), 'mode'=>'display_single_resource_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'user_agent'=>$_SERVER['HTTP_USER_AGENT'], 'planyo_files_location'=>$planyo_files_location));
   echo "<script type='text/javascript'>\nvar force_empty_mode=true;\n</script>\n";
 }
 
@@ -82,7 +91,7 @@ function planyo_is_presentation_mode() {
 }
 
 function planyo_setup() {
-  global $planyo_feedback_url, $planyo_always_use_ajax, $planyo_site_id, $planyo_metasite_id, $planyo_default_mode, $planyo_resource_id, $planyo_files_location, $planyo_language, $planyo_sort_fields, $planyo_extra_search_fields, $planyo_js_library_used, $planyo_include_js_library;
+  global $planyo_feedback_url, $planyo_always_use_ajax, $planyo_site_id, $planyo_metasite_id, $planyo_default_mode, $planyo_resource_id, $planyo_files_location, $planyo_language, $planyo_sort_fields, $planyo_extra_search_fields, $planyo_js_library_used, $planyo_include_js_library, $planyo_login_info, $planyo_resource_ordering;
 
   if ($planyo_default_mode == 'empty' && (planyo_get_param('resource_id') || $planyo_resource_id))
     $planyo_default_mode = 'reserve';
@@ -116,10 +125,20 @@ var planyo_resource_id='<?php if ($planyo_resource_id) echo $planyo_resource_id;
 var planyo_files_location='<?php echo $planyo_files_location;?>'; // relative or absolute directory where the planyo files are kept (usually '/planyo-files')
 var planyo_language='<?php echo $planyo_language;?>'; // you can optionally change the language here, e.g. 'FR' or 'ES' or pass the languge in the 'lang' parameter
 var sort_fields='<?php echo $planyo_sort_fields;?>'; // comma-separated sort fields -- a single field will hide the sort dropdown box
+var planyo_resource_ordering='<?php if (isset($planyo_resource_ordering)) echo $planyo_resource_ordering;?>'; // optional sort criterium for resource list
 var extra_search_fields='<?php echo $planyo_extra_search_fields;?>'; // comma-separated extra fields in the search box
 var presentation_mode=<?php echo ($planyo_default_mode == 'resources') ? "true" : "false";?>; // false: show the search box by default, true: show resource list by default
 var empty_mode=<?php echo ($planyo_default_mode == 'empty') ? "true" : "false";?>; // if true, don't show anything by default
 var planyo_use_https=<?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? "true" : "false";?>; // set this to true if embedding planyo on a secure website (SSL)
+<?php
+    if (is_array($planyo_login_info)) {
+      echo "var planyo_login=new Array();\n";
+      foreach($planyo_login_info as $key=>$val) {
+      if ($val)
+        echo "planyo_login['".$key."']=\"".$val."\";\n";
+      }
+    }
+?>
 </script>
 
 <script type="text/javascript">
