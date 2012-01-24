@@ -33,11 +33,11 @@ function dump(arr,level) {
 	dumped_text += level_padding + "'" + item + "' ...\n";
 	dumped_text += dump(value,level+1);
       } else {
-	dumped_text += level_padding + "'" + item + "' => \"" + value + "\" || ";
+	dumped_text += level_padding + "'" + item + "' = \"" + value + "\" || ";
       }
     }
   } else { //Strings/Chars/Numbers etc.
-    dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
+    dumped_text = "==="+arr+"===("+typeof(arr)+")";
   }
   return dumped_text;
 }
@@ -126,7 +126,7 @@ function planyo_parse_date (date_str, format) {
   if (!date_str) return 0;
 
   var parsed = Date.parse(date_str);
-  if ((!parsed || parsed == undefined || format =="d/m/Y") && format) {
+  if ((!parsed || parsed == undefined || format =="d/m/Y" || format == "d.m.Y") && format) {
     switch (format) {
       case "d.m.Y":
         var parts = date_str.split('.');
@@ -145,6 +145,8 @@ function planyo_parse_date (date_str, format) {
         break;
     }
   }
+  if (!parsed || (parsed.getFullYear && parsed.getFullYear() < 2000))
+    parsed = 0;
   return parsed;
 }
 
@@ -199,7 +201,7 @@ function planyo_get_day_info_for_month (month, year) {
 
 function planyo_show_calendar_picker (month, year, div_id, date_fun) {
   var now = new Date();
-  if (month == null && year == null) {
+  if (year < 2000) {
     month = now.getMonth() + 1;
     year = now.getFullYear();
   }

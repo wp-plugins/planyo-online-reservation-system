@@ -24,9 +24,19 @@ function planyo_get_param (name) {
 var title = planyo_get_param ('t');
 if (title)
   document.title = title;   
-document.write ("<iframe src=\"" + planyo_get_param ('src') + "\" width='100%' style='min-height:98%;' frameborder='0' marginheight='0' marginwidth='0'>");
- document.write (" <p>Your browser does not support iframes.</p>");
-document.write ("</iframe>");
+document.write ("<"+"iframe id='mobile_src' src=\"" + planyo_get_param ('src') + "\" width='100%' style='min-height:98%;' frameborder='0' marginheight='0' marginwidth='0'>");
+document.write (" <"+"p>Your browser does not support iframes.</"+"p>");
+document.write ("</"+"iframe>");
+
+function planyo_msg_listener(event) {
+if (event.data && event.data.indexOf('scroll') != -1)
+   window.scrollTo(0,0);
+}
+if (window.addEventListener)
+ addEventListener("message", planyo_msg_listener, false)
+else
+ attachEvent("onmessage", planyo_msg_listener)
+
 </script>
 
 </body>

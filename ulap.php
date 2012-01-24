@@ -58,7 +58,7 @@ function send_http_post($url, &$fields) {
       $params .= '&';
     }
   }
-  $params .= 'modver=1.7';
+  $params .= 'modver=1.9';
   $ip = get_client_ip();
   if ($ip)
     $params .= "&client_ip=$ip";
@@ -97,8 +97,10 @@ function send_http_post($url, &$fields) {
       $httpstatusmessage = $response_header;
     }
   }
-  while (!feof($fp)) {
-    $response .= fread($fp, 8192);
+  if ($fp !== false) {
+    while (!feof($fp)) {
+      $response .= fread($fp, 8192);
+    }
   }
   fclose($fp);
   error_reporting($old_error_reporting);
