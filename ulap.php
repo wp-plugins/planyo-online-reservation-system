@@ -58,7 +58,7 @@ function send_http_post($url, &$fields) {
       $params .= '&';
     }
   }
-  $params .= 'modver=1.9';
+  $params .= 'modver=2.3';
   $ip = get_client_ip();
   if ($ip)
     $params .= "&client_ip=$ip";

@@ -3,12 +3,12 @@
 Plugin Name: Planyo online reservation system
 Plugin URI: http://www.planyo.com/wordpress-reservation-system
 Description: This plugin embeds the Planyo.com online reservation system. Before using it, you'll need to create an account at planyo.com. Please see <a href='http://www.planyo.com/wordpress-reservation-system'>http://www.planyo.com/wordpress-reservation-system</a> for more info.
-Version: 1.9
+Version: 2.3
 Author: Xtreeme GmbH
 Author URI: http://www.planyo.com/
 */
 
-/*  Copyright 2010 Xtreeme GmbH  (email : planyo@xtreeme.com)
+/*  Copyright 2013 Xtreeme GmbH  (email : planyo@xtreeme.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ function planyo_options() {
 		    <?php planyo_output_select_option('ES', 'Spanish', 'planyo_language');?>
 		    <?php planyo_output_select_option('DE', 'German', 'planyo_language');?>
 		    <?php planyo_output_select_option('PL', 'Polish', 'planyo_language');?>
-		    <?php planyo_output_select_option('SE', 'Swedish', 'planyo_language');?>
+		    <?php planyo_output_select_option('SV', 'Swedish', 'planyo_language');?>
 		    <?php planyo_output_select_option('NO', 'Norwegian', 'planyo_language');?>
 		    <?php planyo_output_select_option('FI', 'Finnish', 'planyo_language');?>
 		    <?php planyo_output_select_option('IS', 'Icelandic', 'planyo_language');?>
@@ -83,7 +83,8 @@ function planyo_options() {
 		    <?php planyo_output_select_option('RU', 'Russian', 'planyo_language');?>
 		    <?php planyo_output_select_option('NL', 'Dutch', 'planyo_language');?>
 		    <?php planyo_output_select_option('EL', 'Greek', 'planyo_language');?>
-		    <?php planyo_output_select_option('PT', 'Portuguese', 'planyo_language');?>
+		    <?php planyo_output_select_option('BR', 'Portuguese (Brazil)', 'planyo_language');?>
+		    <?php planyo_output_select_option('PT', 'Portuguese (Portugal)', 'planyo_language');?>
 		    <?php planyo_output_select_option('CS', 'Czech', 'planyo_language');?>
 		    <?php planyo_output_select_option('CA', 'Catalan', 'planyo_language');?>
 		    <?php planyo_output_select_option('ET', 'Estonian', 'planyo_language');?>
@@ -186,7 +187,7 @@ function planyo_code($atts) {
   // change the following values to match your settings
   $planyo_site_id = get_option('site_id');  // ID of your planyo site. It can be a number or the default value ('demo') to see demonstration of the plugin
   $planyo_files_location = WP_PLUGIN_URL.'/'.$planyo_directory; // relative or absolute directory where the planyo files are kept
-  if ($_SERVER['HTTPS'] == 'on')
+  if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on')
     $planyo_files_location = str_replace("http:","https:",$planyo_files_location);
   if (isset($atts) && isset($atts['language'])) {
     $planyo_language = $atts['language'];
@@ -210,7 +211,7 @@ function planyo_code($atts) {
   else
     $planyo_default_mode = get_option('default_mode');  // initial (defualt) plugin mode; one of: 'resource_list', 'search', 'empty', 'upcoming_availability'
   if (isset($atts) && isset($atts['attribute_string']))
-    $planyo_attribs = $atts['attribute_string'];
+    $planyo_attribs = strip_tags(html_entity_decode($atts['attribute_string']));
   $planyo_js_library_used = (!get_option('js_framework') || get_option('js_framework') == 'jquery' || get_option('js_framework') == 'jquery-noinclude') ? 'jquery' : 'mootools';  // jquery or mootools
   $planyo_include_js_library = !get_option('js_framework') || get_option('js_framework') == 'jquery' || get_option('js_framework') == 'mootools'; // set to false if you already include jQuery on your site
   if (isset($atts) && isset($atts['resource_id']))
@@ -225,7 +226,7 @@ function planyo_code($atts) {
   }
 
 ?>
-<div id='planyo_plugin_code'>
+<div id='planyo_plugin_code' class='planyo_wp'>
 <?php planyo_setup();?>
 </div>
 <?php

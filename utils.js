@@ -101,9 +101,8 @@ function planyo_output_hour_only(hour, european_style_postfix) {
   return hour+(european_style_postfix ? european_style_postfix : '');
 }
 
-function planyo_output_time(hour, minute) {
-  var time_str = document.time_format;
-  if (!time_str) time_str = "H:i";
+function planyo_output_time_from_format(hour, minute, format) {
+  var time_str = format;
   time_str = time_str.replace("H", hour);
   time_str = time_str.replace("h", (hour % 12) == 0 ? 12 : hour % 12);
   time_str = time_str.replace("a", (hour < 12 || hour == 24) ? 'am' : 'pm');
@@ -111,14 +110,25 @@ function planyo_output_time(hour, minute) {
   return time_str;
 }
 
-function planyo_output_date(year, month, day) {
-  var date = document.date_format;
-  if (!date) date = "Y-m-d";
+function planyo_output_time(hour, minute) {
+  var time_str = document.time_format;
+  if (!time_str) time_str = "H:i";
+  return planyo_output_time_from_format(hour, minute, time_str);
+}
+
+function planyo_output_date_from_format(year, month, day, format) {
+  var date = format;
   date = date.replace("Y", year);
   date = date.replace("m", month < 10 ? '0'+month : month);
   date = date.replace("M", planyo_get_month_name(month, true));
   date = date.replace("d", day < 10 ? '0'+day : day);
   return date;
+}
+
+function planyo_output_date(year, month, day) {
+  var date = document.date_format;
+  if (!date) date = "Y-m-d";
+  return planyo_output_date_from_format(year, month, day, date);
 }
 
 function planyo_parse_date (date_str, format) {
@@ -214,16 +224,75 @@ function planyo_show_calendar_picker (month, year, div_id, date_fun) {
     year++;
   }
   var day_info = planyo_get_day_info_for_month (month, year);
+  document.current_picked_month = month;
+  document.current_picked_year = year;
+  document.current_picked_id = div_id;
   
-  var div_code = "<table class='calpicker'><caption><a class='nav' href=\"javascript:planyo_show_calendar_picker("+(month-1)+", "+year+", '"+div_id+"','"+date_fun+"');\">&#160;&laquo;&#160;</a><a class='nav' href=\"javascript:planyo_show_calendar_picker("+(month+1)+","+year+", '"+div_id+"','"+date_fun+"');\">&#160;&raquo;&#160;</a> "+ planyo_get_month_name (month, false) +" " + year + "</caption><thead><tr>";
+  var div_code = "<table class='calpicker'><caption><a class='nav' target='_self' href=\"javascript:planyo_show_calendar_picker("+(month-1)+", "+year+", '"+div_id+"','"+date_fun+"');\">&#160;&laquo;&#160;</a><a class='nav' target='_self' href=\"javascript:planyo_show_calendar_picker("+(month+1)+","+year+", '"+div_id+"','"+date_fun+"');\">&#160;&raquo;&#160;</a> "+ planyo_get_month_name (month, false) +" " + year + "</caption><thead><tr>";
   for (var i = 0; i < 7; i++) {
     div_code += "<th>" + planyo_get_day_name (i, true) + "</th>";
   }
   div_code += "</thead><tbody>";
+  var cellno = 0;
+  var prev_day_is_av = null;
   for (var y = 0; y < 6; y++) {
     div_code += "<tr>";
     for (var x = 0; x < 7; x++) {
-      div_code += "<td class='" + day_info [y][x]['type'] + "' onclick='" + date_fun + "(" + day_info [y][x]['day'] + ","+day_info [y][x]['month']+","+day_info [y][x]['year']+")'>" + day_info [y][x]['day'] + "</td>";
+      var is_av = true;
+      var extra_data_read = false;
+      var resource = null;
+      if (window.planyo_resource_id && document.resources && (document.picker_preview_sync === null || document.picker_preview_sync === undefined || document.picker_preview_sync === 1)) {
+        resource = document.resources[window.planyo_resource_id];
+        if (!planyo_isset (document.fetched_data, year, month)) {
+          if (cellno == 0) {
+            if (document.preview_sync_src)
+              document.preview_sync_src.postMessage('FCH' + planyo_output_date_from_format(year, month, 1, 'Y-m-d'),'*');
+            else if (window.js_fetch_calendar_data)
+              js_fetch_calendar_data (month, year);
+          }
+        }
+        else {
+          is_av = planyo_get_day_status(day_info [y][x]['year'], day_info [y][x]['month'], day_info [y][x]['day'], resource);
+          extra_data_read = true;
+          if (prev_day_is_av === null && resource['night_reservation'] == '1') {
+            var prev_day = planyo_get_prev_day (day_info [y][x]['day'], day_info [y][x]['month'], day_info [y][x]['year'], 1);
+            prev_day_is_av = planyo_get_day_status (prev_day[2], prev_day[1], prev_day[0], resource);
+          }
+        }
+      }
+      var div_type = day_info [y][x]['type'];
+      if (resource && resource['min_rental_time'] >= 24) {
+        if (div_type == 'cur_month_day' || div_type == 'ext_month_day' || div_type == 'active_day') {
+          div_type += "_nox";
+        }
+        if (!is_av) {
+	        if (div_type == 'ext_month_day_nox')
+	          div_type += "_r";
+          else
+            div_type = 'reserved_nox';
+          if (prev_day_is_av && resource['night_reservation'] == '1') {
+            div_type += " morning_av_nox";
+          }
+        }
+        else {
+          var start_day_status = null;
+          if (planyo_isset(document.start_day_restrictions, day_info[y][x]['year'], day_info[y][x]['month'], resource['id'], day_info[y][x]['day'])) {
+            start_day_status = document.start_day_restrictions[day_info[y][x]['year']][day_info[y][x]['month']][resource['id']][day_info[y][x]['day']];
+          }
+          if (div_id.indexOf('end_date') == -1 && planyo_isset(document.start_day_restrictions, day_info[y][x]['year'], day_info[y][x]['month'], resource['id'])) {
+            if (start_day_status == 2)
+              div_type += " no_start";
+            else
+              div_type += " arrival_day";
+          }
+        }
+        if (resource['night_reservation'] == '1' && prev_day_is_av === false && is_av) {
+          div_type += " morning_occ_nox";
+        }
+      }
+      div_code += "<td style='cursor:pointer' class='" + div_type + "' onclick='" + date_fun + "(" + day_info [y][x]['day'] + ","+day_info [y][x]['month']+","+day_info [y][x]['year']+")'>" + day_info [y][x]['day'] + "</td>";
+      prev_day_is_av = is_av;
+      cellno++;
     }
     div_code += "</tr>";
   }
@@ -344,6 +413,7 @@ function planyo_close_calendar () {
     var el = document.getElementById(document.current_picker+'cal');
     el.style.visibility = 'hidden';
     el.style.left=-1000;
+    document.current_picked_id = null;
   }
 }
 
@@ -375,9 +445,12 @@ function planyo_calendar_date_chosen (day, month, year) {
   planyo_close_calendar();
   if(window.js_nav) {
     if (document.current_picker == 'start_date')
-      js_nav(null,month, year);
+      js_nav(day,month, year);
     else if (document.current_picker == 'one_date')
       js_nav(day, month, year);
+  }
+  else if (document.preview_sync_src && document.current_picker != 'end_date') {
+    document.preview_sync_src.postMessage('NAV' + planyo_output_date_from_format(year, month, day, 'Y-m-d'),'*');
   }
 }
 
@@ -454,15 +527,92 @@ function hide_product_images (id) {
   }
 }
 
+function js_mark_fetching_data (month, year, is_fetching) {
+  if (!planyo_isset (document.fetching_data, year))
+    document.fetching_data [year] = new Array ();
+  document.fetching_data [year][month] = is_fetching;
+}
 
+function js_save_fetched_data (month, year, data_root) {
+  if (!planyo_isset (document.fetched_data)) {
+    document.fetched_data = new Array(); // ajax-fed data
+    document.fetching_data = new Array(); // let's not send multiple ajax requests for the same time period
+    document.resource_usage = new Array(); // gives complete data over resource usage
+    document.vacations = new Array(); // resource vacations
+    document.prices = new Array();
+    document.time_data_month = new Array();
+    document.time_data_day = new Array();
+    document.start_day_restrictions = new Array();
+    document.season_colors = new Array();
+    document.event_times = new Array();
+  }
+  js_mark_fetching_data (year, month, false);
+  if (!planyo_isset (document.fetched_data, year))
+    document.fetched_data [year] = new Array ();
+  document.fetched_data [year][month] = data_root ['db_data'];
+  if (!planyo_isset (document.time_data_month, year))
+    document.time_data_month [year] = new Array ();
+  document.time_data_month [year][month] = data_root ['day_items'];
+  if (!planyo_isset (document.time_data_day, year))
+    document.time_data_day [year] = new Array ();
+  document.time_data_day [year][month] = data_root ['hour_items'];
+  if (!planyo_isset (document.resource_usage, year))
+    document.resource_usage [year] = new Array ();
+  document.resource_usage [year][month] = data_root ['res_usage'];
+  if (!planyo_isset (document.vacations, year))
+    document.vacations [year] = new Array ();
+  document.vacations [year][month] = data_root ['vacations'];
+  if (planyo_isset (data_root, 'prices')) {
+    if (!planyo_isset (document.prices, year))
+      document.prices [year] = new Array ();
+    document.prices [year][month] = data_root ['prices'];
+  }
+  if (data_root ['start_days']) {
+    if (!planyo_isset (document.start_day_restrictions, year))
+      document.start_day_restrictions [year] = new Array ();
+    document.start_day_restrictions [year][month] = data_root ['start_days'];
+  }
+  if (data_root ['season_colors']) {
+    if (!planyo_isset (document.season_colors, year))
+      document.season_colors [year] = new Array ();
+    document.season_colors [year][month] = data_root ['season_colors'];
+  }
+  if (data_root ['event_times']) {
+    if (!planyo_isset (document.event_times, year))
+      document.event_times [year] = new Array ();
+    document.event_times [year][month] = data_root ['event_times'];
+  }
+}
 
+function planyo_get_day_status(year, month, day, resource) {
+  if (!resource || resource['min_rental_time'] < 24)
+    return true;
+  var resource_id = resource.id;
+  var usage_data = null;
 
+  var now_obj = new Date();
+  if (now_obj.getFullYear() > year || (now_obj.getFullYear() == year && now_obj.getMonth() + 1 > month) || (now_obj.getFullYear() == year && now_obj.getMonth() + 1 == month && now_obj.getDate() > day))
+    return false; // past
 
-
-
-
-
-
-
-
-
+  if (planyo_isset (document.resource_usage, year, month))
+    usage_data = document.resource_usage [year][month][day];
+  var vacations = null;
+  if (planyo_isset (document.vacations, year, month))
+    vacations = document.vacations [year][month][day];
+  var vacation_count = 0;
+  var vacations_set = planyo_isset (vacations, resource_id, 'ad');
+  if (vacations_set) {
+    if (vacations [resource_id]['ad']['v'] != null)
+      vacation_count += parseInt(vacations [resource_id]['ad']['v']);
+  }
+  if (vacation_count < 0) // negative vacation scenarios possible via manual override
+    vacation_count = 0;
+    
+  var full_usage = 0;
+  if (planyo_isset (usage_data, 'ad', resource_id))
+    full_usage = usage_data ['ad'][resource_id];
+  var diff = resource.quantity - full_usage - vacation_count;
+  if (diff > 0)
+    return true;
+  return false;
+}

@@ -4,7 +4,7 @@ Contributors: xtreeme
 Donate link: No Thanks
 Tags: online, reservation, booking, system, reserve, book, software
 Requires at least: 2.5
-Tested up to: 3.5.1
+Tested up to: 3.1
 Stable tag: trunk
 
 This plugin embeds the Planyo online reservation system. 
@@ -76,5 +76,3 @@ reservation system to appear:
 = 1.8 =
 * Integration with the WordPress login
 
-= 2.3 =
-* Users can modify their own reservations
