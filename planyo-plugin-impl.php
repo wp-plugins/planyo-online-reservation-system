@@ -207,7 +207,7 @@ if ($planyo_attribs && is_string($planyo_attribs)) {
 function get_param (name) {name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");var regexS = "[\\?&]"+name+"=([^&#]*)";var regex = new RegExp (regexS);var results = regex.exec (window.location.href);if (results == null) return null;else  return results[1];}
 if (get_param('mode'))planyo_embed_mode = get_param('mode');
 function get_full_planyo_file_path(name) {if(planyo_files_location.length==0||planyo_files_location.lastIndexOf('/')==planyo_files_location.length-1)return planyo_files_location+name; else return planyo_files_location+'/'+name;}
-document.write("<li"+"nk rel='stylesheet' href='http://static.planyo.com/schemes/?site_id=<?php echo $planyo_site_id;?>' type='text/css' />");
+document.write("<"+"l"+"ink rel='stylesheet' href='http://static.planyo.com/schemes/?site_id=<?php echo $planyo_site_id;?>' type='text/css' />");
 document.write("<"+"div id='planyo_content'><img src='"+get_full_planyo_file_path("hourglass.gif")+"' align='middle' /></"+"div>");
 <?php
 if ($planyo_js_library_used == 'jquery' || $planyo_js_library_used == 'jQuery') {
