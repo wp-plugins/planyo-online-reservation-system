@@ -10,7 +10,7 @@ if (ulap_url != null && (ulap_url.indexOf ("http://www.planyo.com") == 0 || ulap
     if (paramValue != null)
       urlencoded = urlencoded.concat (paramName + "=" + URLEncoder.encode(paramValue, "UTF-8") + "&");
   }
-  urlencoded = urlencoded.concat ("modver=2.3");
+  urlencoded = urlencoded.concat ("modver=2.6");
   try {
     URL url = new URL(ulap_url);
     URLConnection conn = url.openConnection();
