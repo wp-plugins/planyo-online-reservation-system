@@ -3,7 +3,7 @@
 Plugin Name: Planyo online reservation system
 Plugin URI: http://www.planyo.com/wordpress-reservation-system
 Description: This plugin embeds the Planyo.com online reservation system. Before using it, you'll need to create an account at planyo.com. Please see <a href='http://www.planyo.com/wordpress-reservation-system'>http://www.planyo.com/wordpress-reservation-system</a> for more info.
-Version: 2.3
+Version: 2.6
 Author: Xtreeme GmbH
 Author URI: http://www.planyo.com/
 */
@@ -109,7 +109,7 @@ function planyo_options() {
         <tr valign="top">
         <th scope="row">Additional fields of the search box (search mode)</th>
         <td><input type="text" name="extra_search_fields" value="<?php echo get_option('extra_search_fields'); ?>" /><br/>
-        <span class='description'>Comma-separated extra fields of the search box. Can be left empty.</span>
+        <span class='description'>Comma-separated extra fields of the search box. Can be left empty. Example: 'Number of persons'. You first need to define these fields in settings/custom resource properties.</span>
         </td>
         </tr>
 
@@ -186,7 +186,15 @@ function planyo_code($atts) {
 
   // change the following values to match your settings
   $planyo_site_id = get_option('site_id');  // ID of your planyo site. It can be a number or the default value ('demo') to see demonstration of the plugin
-  $planyo_files_location = WP_PLUGIN_URL.'/'.$planyo_directory; // relative or absolute directory where the planyo files are kept
+  $wp_plugin_url = WP_PLUGIN_URL;
+  if (strpos($wp_plugin_url, "://".$_SERVER ['SERVER_NAME']) === false && strpos($wp_plugin_url, "://") !== false) { // make sure the current domain is used for $wp_plugin_url
+    $before_domain_pos = strpos($wp_plugin_url, "://");
+    $after_domain_pos = strpos($wp_plugin_url, "/", $before_domain_pos + 3);
+    if ($after_domain_pos !== false) {
+      $wp_plugin_url = (isset($_SERVER['HTTPS']) ? "https://" : "http://") . $_SERVER['SERVER_NAME'] . substr($wp_plugin_url, $after_domain_pos);
+    }
+  }
+  $planyo_files_location = $wp_plugin_url.'/'.$planyo_directory; // relative or absolute directory where the planyo files are kept
   if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on')
     $planyo_files_location = str_replace("http:","https:",$planyo_files_location);
   if (isset($atts) && isset($atts['language'])) {
@@ -226,7 +234,7 @@ function planyo_code($atts) {
   }
 
 ?>
-<div id='planyo_plugin_code' class='planyo_wp'>
+<div id='planyo_plugin_code' class='planyo_wp planyo'>
 <?php planyo_setup();?>
 </div>
 <?php

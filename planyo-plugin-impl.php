@@ -8,6 +8,7 @@ require_once(dirname(__FILE__).'/ulap.php');
 
 function planyo_get_attribs_as_array ($str) {
   $array = array ();
+  $str = ltrim($str, '? ');
   $pairs = explode('&', $str);  
   if ($pairs && is_array ($pairs)) {  
     foreach($pairs as $pair) {
@@ -86,7 +87,7 @@ function planyo_add_other_params($params) {
 }
 
 function planyo_output_resource_list() {
-  global $planyo_site_id, $planyo_metasite_id, $planyo_feedback_url, $planyo_default_mode, $planyo_language, $planyo_files_location, $planyo_resource_ordering, $planyo_login_info;
+  global $planyo_site_id, $planyo_metasite_id, $planyo_feedback_url, $planyo_default_mode, $planyo_language, $planyo_files_location, $planyo_resource_ordering, $planyo_login_info, $planyo_js_library_used;
   $planyo_default_mode = 'empty';
   $language = planyo_get_language();
   if ($planyo_metasite_id && planyo_get_param('site_id')) {
@@ -101,35 +102,45 @@ function planyo_output_resource_list() {
     $site_id_used = '';
     $metasite_id_used = $planyo_metasite_id;
   }
-  $params = array('modver'=>'2.3','site_id'=>$site_id_used,'metasite_id'=>$metasite_id_used, 'mode'=>'display_resource_list_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'sort'=>planyo_get_param('sort') ? planyo_get_param('sort') : $planyo_resource_ordering, 'res_filter_name'=>planyo_get_param('res_filter_name'), 'res_filter_value'=>planyo_get_param('res_filter_value'), 'planyo_files_location'=>$planyo_files_location);
+  $params = array('modver'=>'2.6','site_id'=>$site_id_used,'metasite_id'=>$metasite_id_used, 'mode'=>'display_resource_list_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'sort'=>planyo_get_param('sort') ? planyo_get_param('sort') : $planyo_resource_ordering, 'res_filter_name'=>planyo_get_param('res_filter_name'), 'res_filter_value'=>planyo_get_param('res_filter_value'), 'planyo_files_location'=>$planyo_files_location);
   if (is_array($planyo_login_info)) {
     $params['login_cs'] = $planyo_login_info['login_cs'];
     $params['login_email'] = $planyo_login_info['login_email'];
   }
+  if ($planyo_js_library_used == 'jquery' || $planyo_js_library_used == 'jQuery')
+    $params['plugin_mode'] = "10";
   $params['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
   echo planyo_get_contents(((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? "https" : "http")."://www.planyo.com/rest/planyo-reservations.php", planyo_add_other_params($params));
   echo "<script type='text/javascript'>\nvar planyo_force_mode='empty';\n</script>\n";
 }
 
 function planyo_output_site_list() {
-  global $planyo_metasite_id, $planyo_feedback_url, $planyo_default_mode, $planyo_language, $planyo_files_location, $planyo_login_info;
+  global $planyo_metasite_id, $planyo_feedback_url, $planyo_default_mode, $planyo_language, $planyo_files_location, $planyo_login_info, $planyo_js_library_used;
   $planyo_default_mode = 'empty';
   $language = planyo_get_language();
-  $params = array('modver'=>'2.3','site_id'=>"",'metasite_id'=> $planyo_metasite_id, 'mode'=>'display_site_list_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'sort'=>planyo_get_param('sort'), 'cal_filter_name'=>planyo_get_param('cal_filter_name'), 'cal_filter_value'=>planyo_get_param('cal_filter_value'), 'planyo_files_location'=>$planyo_files_location);
+  $params = array('modver'=>'2.6','site_id'=>"",'metasite_id'=> $planyo_metasite_id, 'mode'=>'display_site_list_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'sort'=>planyo_get_param('sort'), 'cal_filter_name'=>planyo_get_param('cal_filter_name'), 'cal_filter_value'=>planyo_get_param('cal_filter_value'), 'planyo_files_location'=>$planyo_files_location);
   if (is_array($planyo_login_info)) {
     $params['login_cs'] = $planyo_login_info['login_cs'];
     $params['login_email'] = $planyo_login_info['login_email'];
   }
+  if ($planyo_js_library_used == 'jquery' || $planyo_js_library_used == 'jQuery')
+    $params['plugin_mode'] = "10";
   $params['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
   echo planyo_get_contents(((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? "https" : "http")."://www.planyo.com/rest/planyo-reservations.php", planyo_add_other_params($params));
   echo "<script type='text/javascript'>\nvar planyo_force_mode='empty';\n</script>\n";
 }
 
 function planyo_output_resource_details() {
-  global $planyo_site_id, $planyo_metasite_id, $planyo_feedback_url, $planyo_default_mode, $planyo_language, $planyo_files_location, $planyo_resource_id;
+  global $planyo_site_id, $planyo_metasite_id, $planyo_feedback_url, $planyo_default_mode, $planyo_language, $planyo_files_location, $planyo_resource_id, $planyo_js_library_used, $planyo_login_info;
   $planyo_default_mode = 'empty';
   $language = planyo_get_language();
-  $params = array('modver'=>'2.3','site_id'=>($planyo_site_id && !$planyo_metasite_id ? $planyo_site_id : ""),'metasite_id'=>($planyo_metasite_id ? $planyo_metasite_id : ""), 'resource_id'=>($planyo_resource_id ? $planyo_resource_id : planyo_get_param('resource_id')), 'mode'=>'display_single_resource_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'user_agent'=>$_SERVER['HTTP_USER_AGENT'], 'planyo_files_location'=>$planyo_files_location);
+  $params = array('modver'=>'2.6','site_id'=>($planyo_site_id && !$planyo_metasite_id ? $planyo_site_id : ""),'metasite_id'=>($planyo_metasite_id ? $planyo_metasite_id : ""), 'resource_id'=>($planyo_resource_id ? $planyo_resource_id : planyo_get_param('resource_id')), 'mode'=>'display_single_resource_code','feedback_url'=>$planyo_feedback_url, 'language'=>$language ? $language : '', 'user_agent'=>$_SERVER['HTTP_USER_AGENT'], 'planyo_files_location'=>$planyo_files_location);
+  if (is_array($planyo_login_info)) {
+    $params['login_cs'] = $planyo_login_info['login_cs'];
+    $params['login_email'] = $planyo_login_info['login_email'];
+  }
+  if ($planyo_js_library_used == 'jquery' || $planyo_js_library_used == 'jQuery')
+    $params['plugin_mode'] = "10";
   echo planyo_get_contents((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on' ? "https" : "http")."://www.planyo.com/rest/planyo-reservations.php", planyo_add_other_params($params));
   echo "<script type='text/javascript'>\nvar planyo_force_mode='empty';\n</script>\n";
 }
@@ -174,24 +185,24 @@ function planyo_setup() {
 
 ?>
 <script type="text/javascript">
-// these values are copied from the PHP settings; please update the original values above and leave these unchanged
-var ulap_script="ulap.php"; // file name to one of the ULAP scripts, e.g. ulap.php
-var planyo_site_id='<?php echo $planyo_site_id;?>'; // ID of your planyo site
-var planyo_resource_id='<?php if ($planyo_resource_id) echo $planyo_resource_id;?>'; // optional: ID of the resource being reserved
-var planyo_files_location='<?php echo $planyo_files_location;?>'; // relative or absolute directory where the planyo files are kept (usually '/planyo-files')
-var planyo_language='<?php echo $planyo_language;?>'; // you can optionally change the language here, e.g. 'FR' or 'ES' or pass the languge in the 'planyo_lang' parameter
-var sort_fields='<?php echo $planyo_sort_fields;?>'; // comma-separated sort fields -- a single field will hide the sort dropdown box
-var planyo_resource_ordering='<?php if (isset($planyo_resource_ordering)) echo $planyo_resource_ordering;?>'; // optional sort criterium for resource list
-var extra_search_fields='<?php echo $planyo_extra_search_fields;?>'; // comma-separated extra fields in the search box
+/* these values are copied from the PHP settings; please update the original values above and leave these unchanged */
+var ulap_script="ulap.php"; /* file name to one of the ULAP scripts, e.g. ulap.php, OR "jsonp" for a pure javascript implementation */
+var planyo_site_id='<?php echo $planyo_site_id;?>'; /* ID of your planyo site */
+var planyo_resource_id='<?php if ($planyo_resource_id) echo $planyo_resource_id;?>'; /* optional: ID of the resource being reserved */
+var planyo_files_location='<?php echo $planyo_files_location;?>'; /* relative or absolute directory where the planyo files are kept (usually '/planyo-files') */
+var planyo_language='<?php echo $planyo_language;?>'; /* you can optionally change the language here, e.g. 'FR' or 'ES' or pass the languge in the 'planyo_lang' parameter */
+var sort_fields='<?php echo $planyo_sort_fields;?>'; /* comma-separated sort fields -- a single field will hide the sort dropdown box */
+var planyo_resource_ordering='<?php if (isset($planyo_resource_ordering)) echo $planyo_resource_ordering;?>'; /* optional sort criterium for resource list */
+var extra_search_fields='<?php echo $planyo_extra_search_fields;?>'; /* comma-separated extra fields in the search box */
 var planyo_default_mode='<?php echo $planyo_default_mode;?>';
-var planyo_use_https=<?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? "true" : "false";?>; // set this to true if embedding planyo on a secure website (SSL)
+var planyo_use_https=<?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? "true" : "false";?>; /* set this to true if embedding planyo on a secure website (SSL) */
 var planyo_attribs='<?php
 if ($planyo_attribs && is_string($planyo_attribs)) {
   if (!planyo_should_use_attribs())
     planyo_disable_mode_in_attribs($planyo_attribs);
   echo '?'.strip_tags(html_entity_decode($planyo_attribs));
 }
-?>'; // optional attributes for non-default modes
+?>'; /* optional attributes for non-default modes */
 <?php
     if (is_array($planyo_login_info)) {
       echo "var planyo_login=new Array();\n";
@@ -207,8 +218,8 @@ if ($planyo_attribs && is_string($planyo_attribs)) {
 function get_param (name) {name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");var regexS = "[\\?&]"+name+"=([^&#]*)";var regex = new RegExp (regexS);var results = regex.exec (window.location.href);if (results == null) return null;else  return results[1];}
 if (get_param('mode'))planyo_embed_mode = get_param('mode');
 function get_full_planyo_file_path(name) {if(planyo_files_location.length==0||planyo_files_location.lastIndexOf('/')==planyo_files_location.length-1)return planyo_files_location+name; else return planyo_files_location+'/'+name;}
-document.write("<"+"l"+"ink rel='stylesheet' href='http://static.planyo.com/schemes/?site_id=<?php echo $planyo_site_id;?>' type='text/css' />");
-document.write("<"+"div id='planyo_content'><img src='"+get_full_planyo_file_path("hourglass.gif")+"' align='middle' /></"+"div>");
+document.write("<"+"l"+"ink rel='stylesheet' href='https://www.planyo.com/schemes/?site_id=<?php echo $planyo_site_id;?>' type='text/css' />");
+document.write("<"+"div id='planyo_content' class='planyo'><img src='"+get_full_planyo_file_path("hourglass.gif")+"' align='middle' /></"+"div>");
 <?php
 if ($planyo_js_library_used == 'jquery' || $planyo_js_library_used == 'jQuery') {
     if ($planyo_include_js_library) {
@@ -224,8 +235,8 @@ document.write("<sc"+"ript src='"+get_full_planyo_file_path("planyo-jquery-reser
 else {
     if ($planyo_include_js_library) {
 ?>
-document.write("<sc"+"ript type='text/javascript' src='"+get_full_planyo_file_path("mootools-1.2-core.js")+"'></sc"+"ript>");
-document.write("<sc"+"ript type='text/javascript' src='"+get_full_planyo_file_path("mootools-1.2-more.js")+"'></sc"+"ript>");
+document.write("<sc"+"ript type='text/javascript' src='"+get_full_planyo_file_path("mootools-1.4-core.js")+"'></sc"+"ript>");
+document.write("<sc"+"ript type='text/javascript' src='"+get_full_planyo_file_path("mootools-1.4-more.js")+"'></sc"+"ript>");
 <?php
     }
 ?>

@@ -1,4 +1,6 @@
 <?php
+define ('USE_ARC', 0); // set this to 1 to use arc.planyo.com (archived version), or 0 for planyo.com
+define ('USE_SANDBOX', 0); // set this to 1 to use sandbox.planyo.com (test version), or 0 for planyo.com
 
 if (!isset($header_written)) {
   if (isset ($_POST ['html_content_type']) || isset ($_GET ['html_content_type']))
@@ -48,7 +50,13 @@ function get_client_ip () {
 function send_http_post($url, &$fields) {
   $parts = parse_url($url);
   $host = $parts['host'];
-  if ($host != "www.planyo.com")
+
+  if (constant('USE_SANDBOX'))
+    $url = str_replace("http://www.planyo.com", "http://sandbox.planyo.com", $url);
+  else if (constant('USE_ARC'))
+    $url = str_replace("http://www.planyo.com", "http://arc.planyo.com", $url);
+
+  if ($host != "www.planyo.com" && $host != "arc.planyo.com" && $host != "sandbox.planyo.com" && $host != "localhost")
     return "Error: Call to $url not allowed";
 
   $params = '';
@@ -58,7 +66,7 @@ function send_http_post($url, &$fields) {
       $params .= '&';
     }
   }
-  $params .= 'modver=2.3';
+  $params .= 'modver=2.6';
   $ip = get_client_ip();
   if ($ip)
     $params .= "&client_ip=$ip";

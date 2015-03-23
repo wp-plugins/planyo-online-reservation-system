@@ -184,7 +184,10 @@ function planyo_show_calendar_picker(month, year, div_id, date_fun) {
   document.current_picked_year = year;
   document.current_picked_id = div_id;
   
-  var div_code = "<table class='calpicker'><caption><a class='nav' target='_self' href=\"javascript:planyo_show_calendar_picker(" + (month-1) + ", " + year + ", '" + div_id + "','" + date_fun + "');\">&laquo;</a><a class='nav' target='_self' href=\"javascript:planyo_show_calendar_picker(" + (month + 1) + "," + year + ", '" + div_id + "','" + date_fun + "');\">&raquo;</a> " + planyo_get_month_name(month, false) + " " + year + "</caption><thead><tr>";
+  var cal_ref_el = jQuery('#'+div_id+'ref');
+  var extra_class = (cal_ref_el && cal_ref_el.hasClass('float-date-icon')) ? ' float-calpicker' : '';
+
+  var div_code = "<table class='calpicker "+extra_class+"'><caption><a class='nav "+(extra_class||document.new_scheme ? ' navleft' : '')+"' target='_self' href=\"javascript:planyo_show_calendar_picker("+(month-1)+", "+year+", '"+div_id+"','"+date_fun+"');\">&#160;&laquo;&#160;</a> "+ planyo_get_month_name (month, false) +" " + year + " <a class='nav "+(extra_class||document.new_scheme ? ' navright' : '')+"' target='_self' href=\"javascript:planyo_show_calendar_picker("+(month+1)+","+year+", '"+div_id+"','"+date_fun+"');\">&#160;&raquo;&#160;</a></caption><thead><tr>";
   for (var i = 0; i < 7; i++) {
     div_code += "<th>" + planyo_get_day_name(i, true) + "</th>";
   }
@@ -255,6 +258,8 @@ function planyo_show_calendar_picker(month, year, div_id, date_fun) {
   div_code += "</tr>";
   div_code += "</tbody></table>";
   jQuery('#' + div_id).html(div_code);
+  if(jQuery('#' + div_id).attr('data-table_width'))
+    jQuery('#' + div_id).children().css('width', jQuery('#' + div_id).attr('data-table_width'));
 }
 
 function planyo_get_prev_day(day, month, year, offset) {
@@ -430,8 +435,24 @@ function planyo_show_calendar(cal,onchange) {
   if (cal_cal_el.parent() != jQuery('body')) 
     jQuery('body').append(cal_cal_el);
   planyo_show_calendar_picker (month, year, cal + 'cal', 'planyo_calendar_date_chosen');
-  cal_cal_el.css('left', cal_ref_el.offset().left + 'px');
-  cal_cal_el.css('top', (cal_ref_el.offset().top + cal_ref_el.height() + 5) + 'px');
+  if (cal_ref_el && cal_ref_el.hasClass('float-date-icon')) {
+    var cal_el_par = jQuery('#par_'+cal);
+    cal_cal_el.css('left', (cal_el_par.offset().left-1) + 'px');
+    cal_cal_el.css('top', (cal_el_par.offset().top + cal_el_par.outerHeight() - 1) + 'px');
+    var tab_width = (cal_ref_el.outerWidth() + cal_el_par.outerWidth()) + 'px';
+    cal_cal_el.attr('data-table_width',tab_width);
+    cal_cal_el.children().css('width', tab_width);
+  }
+  else {
+    if (document.is_mobile||document.new_scheme) {
+      cal_cal_el.css('left', (cal_ref_el.offset().left + cal_ref_el.outerWidth() - cal_cal_el.outerWidth()) + 'px');
+      cal_cal_el.css('top', (cal_ref_el.offset().top + cal_ref_el.outerHeight() + 2) + 'px');
+    }
+    else {
+      cal_cal_el.css('left', cal_ref_el.offset().left + 'px');
+      cal_cal_el.css('top', (cal_ref_el.offset().top + cal_ref_el.outerHeight() + 5) + 'px');
+    }
+  }
   cal_cal_el.css('visibility', 'visible');
 }
 
@@ -561,4 +582,100 @@ function planyo_get_day_status(year, month, day, resource) {
   if (diff > 0)
     return true;
   return false;
+}
+
+function planyo_check_av_hours(datestr) {
+  var curdate = planyo_parse_date(datestr, document.date_format);
+  if (!curdate)
+     return;
+  var curdate_obj = new Date();
+  curdate_obj.setTime (curdate);
+  var month = curdate_obj.getMonth() + 1;
+  var year = curdate_obj.getFullYear();
+  var day = curdate_obj.getDate();
+  if(!window.planyo_resource_id || !document.resources)
+      return;
+  var resource=document.resources[window.planyo_resource_id];
+  if (!resource || !document.getElementById('start_time'))
+    return;
+  var resource_id = resource.id;
+  var usage_data = null;
+  var stobj = document.getElementById('start_time');
+
+  var prevval = stobj.value;
+
+  var now_obj = new Date();
+  if (now_obj.getFullYear() > year || (now_obj.getFullYear() == year && now_obj.getMonth() + 1 > month) || (now_obj.getFullYear() == year && now_obj.getMonth() + 1 == month && now_obj.getDate() > day)) {
+    if (document.planyo_all_start_hours) {
+        stobj.options.length = 0;
+        for(var i=0;i<document.planyo_all_start_hours.length;i++) {
+            var opt = document.createElement('option');
+            opt.text = document.planyo_all_start_hours[i][0];
+            opt.value = document.planyo_all_start_hours[i][1];
+            stobj.options.add(opt);
+        }
+    }
+    return; // past
+  }
+
+    if (planyo_isset (document.resource_usage, year, month))
+        usage_data = document.resource_usage [year][month][day];
+    var vacations = null;
+    if (planyo_isset (document.vacations, year, month))
+        vacations = document.vacations [year][month][day];
+    
+    if (!document.planyo_all_start_hours && (vacations || usage_data)) {
+      document.planyo_all_start_hours = new Array();
+        for(var i=0; i<stobj.options.length;i++) {
+            document.planyo_all_start_hours.push(new Array(stobj.options[i].text,stobj.options[i].value));
+        }
+    }
+
+    if (!document.planyo_all_start_hours)
+        return;
+
+    stobj.options.length = 0;
+    var selindex = -1;
+    var numopts = 0;
+    for(var i=0;i<document.planyo_all_start_hours.length;i++) {
+        var min=0;
+        var h=parseFloat(document.planyo_all_start_hours[i][1]);
+        if(parseInt(h)!=parseFloat(h)) {
+            min=parseFloat(h);
+            h=parseInt(h);
+            min=(min-h)*60;
+        }
+        var vacation_count = 0;
+        if (planyo_isset (vacations, resource_id, h)) {
+            if (planyo_isset (vacations, resource_id, h, min))
+                vacation_count = parseInt(vacations [resource_id][h][min]['v']);
+            if (vacations [resource_id][h]['v'] != null)
+                vacation_count += parseInt(vacations [resource_id][h]['v']);
+        }
+        if (planyo_isset (vacations, resource_id, 'ad'))
+            vacation_count += Math.max (vacation_count, parseInt (vacations [resource_id]['ad']['v']));
+        if (vacation_count < 0) // negative vacation scenarios possible via manual override
+            vacation_count = 0;
+        var full_usage = 0;
+        if (planyo_isset(usage_data,h,'qs',min,resource_id))
+            full_usage = usage_data[h]['qs'][min][resource_id];
+        if (planyo_isset(usage_data,h,resource_id))
+            full_usage += usage_data[h][resource_id];
+        if (planyo_isset (usage_data, 'ad', resource_id))
+            full_usage += usage_data ['ad'][resource_id];
+        var diff = resource.quantity - full_usage - vacation_count;
+        var opt = document.createElement('option');
+        opt.text = document.planyo_all_start_hours[i][0];
+        opt.value = document.planyo_all_start_hours[i][1];
+        if (diff <= 0) {
+            opt.text += "[X]";
+            opt.className = 'picker_unav_h';
+        }
+        stobj.options.add(opt);
+        if (opt.value == prevval)
+            selindex = numopts;
+        numopts++;
+    }
+    if(selindex!=-1)
+        stobj.selectedIndex = selindex;
 }
