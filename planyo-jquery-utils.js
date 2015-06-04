@@ -213,7 +213,7 @@ function planyo_show_calendar_picker(month, year, div_id, date_fun) {
         else {
           is_av = planyo_get_day_status(day_info [y][x]['year'], day_info [y][x]['month'], day_info [y][x]['day'], resource);
           extra_data_read = true;
-          if (prev_day_is_av === null && resource['night_reservation'] == '1') {
+          if (prev_day_is_av === null && resource && resource['night_reservation'] == '1') {
             var prev_day = planyo_get_prev_day (day_info [y][x]['day'], day_info [y][x]['month'], day_info [y][x]['year'], 1);
             prev_day_is_av = planyo_get_day_status (prev_day[2], prev_day[1], prev_day[0], resource);
           }
@@ -229,7 +229,7 @@ function planyo_show_calendar_picker(month, year, div_id, date_fun) {
 	          div_type += "_r";
           else
             div_type = 'reserved_nox';
-          if (prev_day_is_av && resource['night_reservation'] == '1') {
+          if (prev_day_is_av && resource && resource['night_reservation'] == '1') {
             div_type += " morning_av_nox";
           }
         }
@@ -245,7 +245,7 @@ function planyo_show_calendar_picker(month, year, div_id, date_fun) {
               div_type += " arrival_day";
           }
         }
-        if (resource['night_reservation'] == '1' && prev_day_is_av === false && is_av) {
+        if (resource && resource['night_reservation'] == '1' && prev_day_is_av === false && is_av) {
           div_type += " morning_occ_nox";
         }
       }

@@ -120,7 +120,7 @@ function planyo_on_reservation_success(reservation_id, user_text) {
   else {
     planyo$('res_ok_msg').innerHTML = user_text;
     eval_children_scripts(planyo$('res_ok_msg'));
-    if (planyo_isset(window.on_planyo_form_loaded)) {
+    if (planyo_isset(window.on_planyo_form_loaded) && reservation_id) {
       document.reservation_id = reservation_id;
       window.on_planyo_form_loaded('reservation_done');
     }
@@ -220,6 +220,7 @@ function planyo_send_request (data, on_complete_function, hide_item) {
     req_data += "&ulap_url="+(window.planyo_use_https ? "https" : "http")+"://www.planyo.com/rest/planyo-reservations.php";
   if (window.planyo_language)
     req_data += "&language=" + planyo_language;
+  req_data += "&plugin_mode=1";
   var shopping_cart_id = planyo_get_cookie ('planyo_cart_id');
   if (shopping_cart_id && req_data.indexOf('cart_id=') == -1)
     req_data += "&cart_id=" + shopping_cart_id + "&first_reservation_id=" + planyo_get_cookie('planyo_first_reservation_id');
@@ -698,6 +699,7 @@ function planyo_embed_code(form_url, form_url_params) {
   if (window.planyo_language)
     form_url_params += "&language=" + planyo_language;
   form_url_params += "&html_content_type=1";
+  form_url_params += "&plugin_mode=1";
   var shopping_cart_id = planyo_get_cookie ('planyo_cart_id');
   if (shopping_cart_id && form_url_params.indexOf('cart_id=') == -1)
     form_url_params += "&cart_id=" + shopping_cart_id + "&first_reservation_id=" + planyo_get_cookie('planyo_first_reservation_id');
